@@ -34,6 +34,63 @@ export enum KycCheckType {
   BANK_ACCOUNT_NAME = 'BANK_ACCOUNT_NAME',
 }
 
+export enum KycProviderType {
+  PREMBLY = 'PREMBLY',
+  SMILE_ID = 'SMILE_ID',
+  DOJAH = 'DOJAH',
+  MOCK = 'MOCK',
+}
+
+export enum RampProviderType {
+  QUIDAX = 'QUIDAX',
+  YELLOWCARD = 'YELLOWCARD',
+  MOCK = 'MOCK',
+}
+
+export enum BankingProviderType {
+  KORAPAY = 'KORAPAY',
+  PAYSTACK = 'PAYSTACK',
+  MOCK = 'MOCK',
+}
+
+export enum CryptoNetwork {
+  TRON = 'TRON',
+  POLYGON = 'POLYGON',
+  BASE = 'BASE',
+  ETHEREUM = 'ETHEREUM',
+  BSC = 'BSC',
+  SOLANA = 'SOLANA',
+  ARBITRUM = 'ARBITRUM',
+}
+
+export enum SubscriptionStatus {
+  TRIAL = 'TRIAL',
+  ACTIVE = 'ACTIVE',
+  PAST_DUE = 'PAST_DUE',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum SubscriptionPlan {
+  STARTER = 'STARTER',
+  GROWTH = 'GROWTH',
+  ENTERPRISE = 'ENTERPRISE',
+}
+
+export enum CompanyOnboardingStep {
+  PROFILE = 'PROFILE',
+  COMPLIANCE = 'COMPLIANCE',
+  BILLING = 'BILLING',
+  COMPLETED = 'COMPLETED',
+}
+
+export enum WorkerOnboardingStep {
+  ACCOUNT = 'ACCOUNT',
+  KYC = 'KYC',
+  BANK = 'BANK',
+  CONTRACT = 'CONTRACT',
+  COMPLETED = 'COMPLETED',
+}
+
 export enum PayoutMethodType {
   BANK_ACCOUNT = 'BANK_ACCOUNT',
   STABLECOIN_WALLET = 'STABLECOIN_WALLET',
@@ -74,6 +131,7 @@ export enum LedgerCategory {
   STAMP_DUTY = 'STAMP_DUTY',
   REVERSAL = 'REVERSAL',
   ADJUSTMENT = 'ADJUSTMENT',
+  SUBSCRIPTION_FEE = 'SUBSCRIPTION_FEE',
 }
 
 export enum ContractStatus {

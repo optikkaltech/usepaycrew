@@ -1,9 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { PaymentEntity, WorkerEntity } from '../../database/entities';
+import { PaymentEntity, WorkerEntity, CompanyEntity } from '../../database/entities';
 import { Currency, PaymentStatus } from '@paycrew/shared-types';
 import { LedgerService } from '../ledger/ledger.service';
+import { RampProviderFactory } from '../../providers/ramp/ramp.factory';
 import { CreatePaymentDto, PaymentFeeEstimate, WebhookEventPayload } from './payments.types';
 
 @Injectable()
@@ -13,9 +14,13 @@ export class PaymentsService {
     private readonly paymentRepo: Repository<PaymentEntity>,
     @InjectRepository(WorkerEntity)
     private readonly workerRepo: Repository<WorkerEntity>,
+    @InjectRepository(CompanyEntity)
+    private readonly companyRepo: Repository<CompanyEntity>,
     private readonly ledgerService: LedgerService,
     private readonly dataSource: DataSource,
+    private readonly rampFactory: RampProviderFactory,
   ) {}
+
 
   calculateFee(amountStr: string, currency: Currency): PaymentFeeEstimate {
     const amount = parseFloat(amountStr);
@@ -50,7 +55,23 @@ export class PaymentsService {
     });
     if (!worker) throw new NotFoundException('Worker not found in your company');
 
+    const company = await this.companyRepo.findOne({ where: { id: companyId } });
     const feeEst = this.calculateFee(dto.amount, dto.currency);
+    const rampProvider = this.rampFactory.getProvider(company?.activeRampProvider);
+    const ref = `pay_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    let providerRef = ref;
+
+    if (dto.currency === Currency.USDT || dto.currency === Currency.USDC) {
+      const payoutRes = await rampProvider.initiatePayout({
+        payoutId: ref,
+        recipientAccount: '0x323b5d4c32345ced773f21e087',
+        amount: feeEst.amount,
+        currency: dto.currency,
+        idempotencyKey: dto.idempotencyKey,
+      });
+      providerRef = payoutRes.providerReference;
+    }
+
 
     return this.dataSource.transaction(async (manager) => {
       const payment = manager.create(PaymentEntity, {
@@ -64,9 +85,10 @@ export class PaymentsService {
         note: dto.note || null,
         idempotencyKey: dto.idempotencyKey,
         scheduledFor: dto.scheduledFor || null,
-        providerReference: `qdx_payout_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+        providerReference: providerRef,
       });
       const saved = await manager.save(payment);
+
 
       await this.ledgerService.processPayroll(
         {

@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
 import { KycCheckEntity, WorkerEntity } from '../../database/entities';
-import { KycCheckType, KycStatus, WorkerStatus } from '@paycrew/shared-types';
+import { KycCheckType, KycProviderType, KycStatus, WorkerStatus } from '@paycrew/shared-types';
 import { KycVerificationResult, SubmitKycDto } from './kyc.types';
+import { KycProviderFactory } from '../../providers/kyc/kyc.factory';
 
 @Injectable()
 export class KycService {
@@ -18,10 +19,14 @@ export class KycService {
     private readonly kycRepo: Repository<KycCheckEntity>,
     @InjectRepository(WorkerEntity)
     private readonly workerRepo: Repository<WorkerEntity>,
+    private readonly kycFactory: KycProviderFactory,
   ) {}
 
   async submitCheck(workerId: string, dto: SubmitKycDto): Promise<KycVerificationResult> {
-    const worker = await this.workerRepo.findOne({ where: { id: workerId } });
+    const worker = await this.workerRepo.findOne({
+      where: { id: workerId },
+      relations: ['company'],
+    });
     if (!worker) throw new NotFoundException('Worker not found');
 
     const cleanId = dto.identifier.replace(/\D/g, '');
@@ -32,35 +37,33 @@ export class KycService {
     const encryptedData = this.encrypt(cleanId);
     const maskedIdentifier = `*******${cleanId.slice(-4)}`;
 
-    // Provider check simulation (sandbox / mock adapter)
-    const isMockFailure = cleanId.endsWith('0000');
-    const isManualReview = cleanId.endsWith('9999');
+    const preferredProvider = worker.company?.activeKycProvider || KycProviderType.PREMBLY;
 
-    let status = KycStatus.APPROVED;
-    let reasonCode: string | null = null;
-
-    if (isMockFailure) {
-      status = KycStatus.FAILED;
-      reasonCode = 'IDENTITY_DATA_MISMATCH';
-    } else if (isManualReview) {
-      status = KycStatus.MANUAL_REVIEW;
-      reasonCode = 'SUSPECTED_FRAUD_FLAG';
-    }
+    // Execute verification via OOP KycProviderFactory with automated failover
+    const providerResult = await this.kycFactory.verifyWithFailover(
+      preferredProvider,
+      async (provider) => {
+        if (dto.checkType === KycCheckType.NIN) {
+          return provider.verifyNin(cleanId);
+        }
+        return provider.verifyBvn(cleanId);
+      },
+    );
 
     const check = this.kycRepo.create({
       workerId,
-      provider: 'DOJAH_SANDBOX',
+      provider: preferredProvider,
       checkType: dto.checkType,
-      status,
+      status: providerResult.status,
       encryptedData,
       maskedIdentifier,
-      reasonCode,
-      providerReference: `kyc_ref_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      reasonCode: providerResult.reasonCode || null,
+      providerReference: providerResult.providerReference,
     });
 
     const saved = await this.kycRepo.save(check);
 
-    if (status === KycStatus.APPROVED) {
+    if (providerResult.status === KycStatus.APPROVED) {
       worker.status = WorkerStatus.VERIFIED;
       await this.workerRepo.save(worker);
     }

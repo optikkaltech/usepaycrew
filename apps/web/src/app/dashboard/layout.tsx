@@ -9,6 +9,7 @@ import {
   LayersIcon,
   UsersIcon,
   CreditCardIcon,
+  BuildingIcon,
   LogOutIcon,
   MenuIcon,
   XIcon,
@@ -19,7 +20,9 @@ const navItems = [
   { href: '/dashboard', label: AppStrings.navigation.dashboard, icon: LayersIcon },
   { href: '/dashboard/workers', label: AppStrings.navigation.workers, icon: UsersIcon },
   { href: '/dashboard/payroll', label: AppStrings.navigation.payroll, icon: CreditCardIcon },
+  { href: '/dashboard/settings', label: AppStrings.navigation.settings, icon: BuildingIcon },
 ];
+
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();

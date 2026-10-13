@@ -1,12 +1,16 @@
 import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { GoogleAuthService, GoogleAuthDto } from './google-auth.service';
 import { RegisterDto, LoginDto } from './auth.types';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleAuthService: GoogleAuthService,
+  ) {}
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -20,11 +24,18 @@ export class AuthController {
     return { success: true, data: result };
   }
 
+  @Post('google')
+  async googleAuth(@Body() dto: GoogleAuthDto) {
+    const result = await this.googleAuthService.authenticateWithGoogle(dto);
+    return { success: true, data: result };
+  }
+
   @Post('refresh')
   async refresh(@Body('refreshToken') refreshToken: string) {
     const result = await this.authService.refreshToken(refreshToken);
     return { success: true, data: result };
   }
+
 
   @Get('me')
   @UseGuards(JwtAuthGuard)

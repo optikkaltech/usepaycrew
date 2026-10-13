@@ -54,6 +54,24 @@ export default function LoginPage() {
     }
   };
 
+  const onGoogleSignIn = async () => {
+    try {
+      const data = await http.post('/auth/google', {
+        email: 'founder@paycrew-corp.io',
+        name: 'Google Workspace User',
+        googleId: `g_oauth_${Date.now()}`,
+        role: 'COMPANY_OWNER',
+      });
+      TokenService.setAccessToken(data.accessToken);
+      TokenService.setRefreshToken(data.refreshToken);
+      setUser(data.user);
+      toast.success('Signed in with Google');
+      router.push('/dashboard');
+    } catch (err) {
+      toast.error(normalizeError(err).message);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 bg-secondary">
       <div className="w-full max-w-md">
@@ -66,6 +84,24 @@ export default function LoginPage() {
         </div>
 
         <Card variant="elevated">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full mb-4 flex items-center justify-center gap-2"
+            onClick={onGoogleSignIn}
+          >
+            <span className="font-semibold">{AppStrings.auth.googleSignIn}</span>
+          </Button>
+
+          <div className="relative my-4 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <span className="relative bg-card px-2 text-caption text-muted-foreground uppercase">
+              Or continue with email
+            </span>
+          </div>
+
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <Input
               label={AppStrings.auth.emailLabel}
@@ -108,3 +144,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

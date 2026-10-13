@@ -20,11 +20,18 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 255 })
   email: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  passwordHash: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  passwordHash: string | null;
 
   @Column({ type: 'varchar', length: 255 })
   fullName: string;
+
+  @Index()
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  googleId: string | null;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  avatarUrl: string | null;
 
   @Column({
     type: 'enum',

@@ -12,6 +12,7 @@ import {
 import {
   Currency,
   PayFrequency,
+  WorkerOnboardingStep,
   WorkerStatus,
 } from '@paycrew/shared-types';
 import { CompanyEntity } from './company.entity';
@@ -75,6 +76,13 @@ export class WorkerEntity {
     default: WorkerStatus.INVITED,
   })
   status: WorkerStatus;
+
+  @Column({
+    type: 'enum',
+    enum: WorkerOnboardingStep,
+    default: WorkerOnboardingStep.ACCOUNT,
+  })
+  onboardingStep: WorkerOnboardingStep;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   inviteToken: string | null;

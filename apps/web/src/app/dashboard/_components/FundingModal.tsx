@@ -53,16 +53,16 @@ export function FundingModal({ isOpen, onClose, fundingInfo }: FundingModalProps
           <Card className="flex flex-col gap-2 bg-secondary/50">
             <div className="flex items-center gap-2 text-primary">
               <BuildingIcon className="h-5 w-5" />
-              <span className="text-label-lg font-bold">{AppStrings.dashboard.virtualAccountTitle}</span>
+              <span className="text-label-lg font-bold">{AppStrings.dashboard.korapayVirtualAccount}</span>
             </div>
             <p className="text-body-xs text-muted-foreground">
-              Transfer naira from any Nigerian commercial bank or banking app
+              {AppStrings.dashboard.korapaySubtitle}
             </p>
             <div className="mt-2 flex items-center justify-between rounded-lg border border-border bg-background p-3">
               <div>
-                <p className="text-caption text-muted-foreground">Bank Name</p>
+                <p className="text-caption text-muted-foreground">Settlement Bank</p>
                 <p className="text-label-md font-semibold text-foreground">
-                  {fundingInfo?.virtualAccountBank || 'Wema Bank / Providus'}
+                  {fundingInfo?.virtualAccountBank || 'Providus Bank (Korapay)'}
                 </p>
                 <p className="mt-1 text-caption text-muted-foreground">Account Number</p>
                 <p className="text-display-sm font-extrabold text-primary">
@@ -86,15 +86,16 @@ export function FundingModal({ isOpen, onClose, fundingInfo }: FundingModalProps
               <span className="text-label-lg font-bold">{AppStrings.dashboard.stablecoinAddressTitle}</span>
             </div>
             <p className="text-body-xs text-muted-foreground">
-              Send USDC or USDT on Polygon, Base or Ethereum (auto-converted to USD balance)
+              Send USDT / USDC via Polygon, TRON (TRC20), Base, or Ethereum (Quidax Instant Settlement)
             </p>
             <div className="mt-2 flex items-center justify-between rounded-lg border border-border bg-background p-3">
               <div className="overflow-hidden mr-2">
-                <p className="text-caption text-muted-foreground">ERC-20 Deposit Address</p>
+                <p className="text-caption text-muted-foreground">Deposit Address</p>
                 <p className="text-label-sm font-mono truncate text-foreground">
                   {fundingInfo?.depositWalletAddress || '0x71C...4982'}
                 </p>
               </div>
+
               <Button
                 variant="outline"
                 size="sm"

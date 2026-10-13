@@ -13,12 +13,16 @@ import { LedgerModule } from './modules/ledger/ledger.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { ProvidersModule } from './providers/providers.module';
+import { OnboardingModule } from './modules/onboarding/onboarding.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(dataSourceOptions),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ProvidersModule,
     AuthModule,
     CompaniesModule,
     WorkersModule,
@@ -29,6 +33,9 @@ import { AdminModule } from './modules/admin/admin.module';
     PaymentsModule,
     WithdrawalsModule,
     AdminModule,
+    OnboardingModule,
+    SubscriptionsModule,
   ],
 })
 export class AppModule {}
+

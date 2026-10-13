@@ -13,6 +13,7 @@ export {
   Download as DownloadIcon,
   FileCheck as FileCheckIcon,
   FileText as FileTextIcon,
+  Globe as GlobeIcon,
   HelpCircle as HelpCircleIcon,
   Layers as LayersIcon,
   Lock as LockIcon,
@@ -24,7 +25,9 @@ export {
   ShieldAlert as ShieldAlertIcon,
   ShieldCheck as ShieldCheckIcon,
   Smartphone as SmartphoneIcon,
+  Sparkles as SparklesIcon,
   Upload as UploadIcon,
+
   User as UserIcon,
   UserCheck as UserCheckIcon,
   UserPlus as UserPlusIcon,

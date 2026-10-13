@@ -8,6 +8,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class PayoutMethodsController {
   constructor(private readonly pmService: PayoutMethodsService) {}
 
+  @Get('banks')
+  async getBanks() {
+    const data = await this.pmService.getBanks();
+    return { success: true, data };
+  }
+
   @Get('lookup-bank')
   async lookupBank(
     @Query('accountNumber') accountNumber: string,
@@ -16,6 +22,7 @@ export class PayoutMethodsController {
     const data = await this.pmService.lookupBankAccount(accountNumber, bankCode);
     return { success: true, data };
   }
+
 
   @Post(':workerId/bank')
   async addBank(

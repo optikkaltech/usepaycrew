@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { BuildingIcon, CheckCircleIcon } from '@/assets';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -9,11 +10,14 @@ import { http } from '@/services';
 import { useToast } from '@/hooks';
 import { normalizeError } from '@/utils';
 
-const banks = [
+const defaultBanks = [
   { code: '058', name: 'GTBank (Guaranty Trust Bank)' },
   { code: '011', name: 'First Bank of Nigeria' },
   { code: '033', name: 'United Bank for Africa (UBA)' },
   { code: '057', name: 'Zenith Bank' },
+  { code: '044', name: 'Access Bank' },
+  { code: '035', name: 'Wema Bank' },
+  { code: '101', name: 'Providus Bank' },
   { code: '232', name: 'Sterling Bank' },
 ];
 
@@ -25,10 +29,20 @@ interface BankSectionProps {
 
 export function BankSection({ workerId, payoutMethods, onSuccess }: BankSectionProps) {
   const toast = useToast();
+  const [banks, setBanks] = useState(defaultBanks);
   const [bankCode, setBankCode] = useState('058');
   const [accountNumber, setAccountNumber] = useState('');
   const [resolvedName, setResolvedName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Fetch live Korapay bank list on mount
+  useEffect(() => {
+    http.get('/payout-methods/banks')
+      .then((res: any) => {
+        if (Array.isArray(res) && res.length > 0) setBanks(res);
+      })
+      .catch(() => {});
+  }, []);
 
   const defaultMethod = payoutMethods.find((m) => m.isDefault);
 
@@ -45,6 +59,7 @@ export function BankSection({ workerId, payoutMethods, onSuccess }: BankSectionP
       setResolvedName(null);
     }
   };
+
 
   const handleSave = async () => {
     if (!resolvedName) return;

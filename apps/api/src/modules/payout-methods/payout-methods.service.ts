@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PayoutMethodEntity, WorkerEntity } from '../../database/entities';
 import { PayoutMethodType } from '@paycrew/shared-types';
+import { BankingProviderFactory } from '../../providers/banking/banking.factory';
+import { BankInfo } from '../../providers/banking/banking.interface';
 import {
   AddBankAccountDto,
   AddWalletDto,
@@ -16,27 +18,23 @@ export class PayoutMethodsService {
     private readonly pmRepo: Repository<PayoutMethodEntity>,
     @InjectRepository(WorkerEntity)
     private readonly workerRepo: Repository<WorkerEntity>,
+    private readonly bankingFactory: BankingProviderFactory,
   ) {}
+
+  async getBanks(): Promise<BankInfo[]> {
+    return this.bankingFactory.getProvider().getBanks();
+  }
 
   async lookupBankAccount(accountNumber: string, bankCode: string): Promise<BankAccountLookupResult> {
     if (!/^\d{10}$/.test(accountNumber)) {
       throw new BadRequestException('Nigerian NUBAN account number must be 10 digits');
     }
 
-    // Bank resolution mock adapter (matches real NIBSS/Paystack/Monnify format)
-    const simulatedNames: Record<string, string> = {
-      '058': 'OLUWASEUN ADEBAYO',
-      '011': 'CHUKWUMA EZE',
-      '033': 'FATIMA BELLO',
-      '057': 'BABATUNDE BAKARE',
-      '232': 'AMINA SULEIMAN',
-    };
-
-    const resolvedName = simulatedNames[bankCode] || 'VERIFIED WORKER ACCOUNT';
+    const res = await this.bankingFactory.getProvider().resolveAccount(accountNumber, bankCode);
     return {
-      accountNumber,
-      bankCode,
-      accountName: resolvedName,
+      accountNumber: res.accountNumber,
+      bankCode: res.bankCode,
+      accountName: res.accountName,
     };
   }
 
@@ -68,10 +66,11 @@ export class PayoutMethodsService {
 
     const cleanAddress = dto.walletAddress.trim();
     const isEvm = /^0x[a-fA-F0-9]{40}$/.test(cleanAddress);
+    const isTron = /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(cleanAddress);
     const isSolana = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(cleanAddress);
 
-    if (!isEvm && !isSolana) {
-      throw new BadRequestException('Invalid wallet address format');
+    if (!isEvm && !isTron && !isSolana) {
+      throw new BadRequestException('Invalid wallet address format (EVM, TRON, or Solana)');
     }
 
     const pm = this.pmRepo.create({
@@ -92,3 +91,4 @@ export class PayoutMethodsService {
     });
   }
 }
+

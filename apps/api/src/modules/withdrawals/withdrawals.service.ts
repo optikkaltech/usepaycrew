@@ -2,8 +2,9 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { WorkerEntity, PayoutMethodEntity } from '../../database/entities';
-import { Currency } from '@paycrew/shared-types';
+import { PayoutMethodType, Currency } from '@paycrew/shared-types';
 import { LedgerService } from '../ledger/ledger.service';
+import { BankingProviderFactory } from '../../providers/banking/banking.factory';
 import {
   InitiateWithdrawalDto,
   WithdrawalCalculation,
@@ -21,6 +22,7 @@ export class WithdrawalsService {
     private readonly pmRepo: Repository<PayoutMethodEntity>,
     private readonly ledgerService: LedgerService,
     private readonly dataSource: DataSource,
+    private readonly bankingFactory: BankingProviderFactory,
   ) {}
 
   calculateWithdrawal(amountStr: string, currency: Currency): WithdrawalCalculation {
@@ -68,7 +70,6 @@ export class WithdrawalsService {
     const ref = `wdr_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
     return this.dataSource.transaction(async (manager) => {
-      // In currency units of the worker's balance
       const feeInCurrency = dto.currency === Currency.NGN
         ? (parseFloat(calc.partnerFee) + parseFloat(calc.flatFee)).toFixed(2)
         : ((parseFloat(calc.partnerFee) + parseFloat(calc.flatFee)) / this.exchangeRate).toFixed(2);
@@ -89,6 +90,17 @@ export class WithdrawalsService {
         manager,
       );
 
+      if (pm.type === PayoutMethodType.BANK_ACCOUNT) {
+        await this.bankingFactory.getProvider().disburseNaira({
+          amount: parseFloat(calc.netPayoutNaira),
+          reference: ref,
+          bankCode: pm.bankCode || '058',
+          accountNumber: pm.accountReference,
+          accountName: pm.accountName || worker.name,
+          narration: `PayCrew withdrawal to ${worker.name}`,
+        });
+      }
+
       return {
         receiptId: `RCP-${Date.now().toString(36).toUpperCase()}`,
         workerName: worker.name,
@@ -106,3 +118,4 @@ export class WithdrawalsService {
     });
   }
 }
+

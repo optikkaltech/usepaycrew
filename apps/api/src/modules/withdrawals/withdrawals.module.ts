@@ -4,14 +4,17 @@ import { WorkerEntity, PayoutMethodEntity } from '../../database/entities';
 import { WithdrawalsService } from './withdrawals.service';
 import { WithdrawalsController } from './withdrawals.controller';
 import { LedgerModule } from '../ledger/ledger.module';
+import { ProvidersModule } from '../../providers/providers.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([WorkerEntity, PayoutMethodEntity]),
     LedgerModule,
+    ProvidersModule,
   ],
   controllers: [WithdrawalsController],
   providers: [WithdrawalsService],
   exports: [WithdrawalsService],
 })
 export class WithdrawalsModule {}
+
