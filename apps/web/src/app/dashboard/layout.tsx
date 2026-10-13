@@ -14,7 +14,7 @@ import {
   MenuIcon,
   XIcon,
 } from '@/assets';
-import { useAuth } from '@/hooks';
+import { useAuth, useOnboardingGate } from '@/hooks';
 
 const navItems = [
   { href: '/dashboard', label: AppStrings.navigation.dashboard, icon: LayersIcon },
@@ -23,15 +23,24 @@ const navItems = [
   { href: '/dashboard/settings', label: AppStrings.navigation.settings, icon: BuildingIcon },
 ];
 
-
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { logout, fetchProfile, user } = useAuth();
+  const { isReady } = useOnboardingGate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-body-sm text-muted-foreground">{AppStrings.common.loading}</p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background lg:flex-row">

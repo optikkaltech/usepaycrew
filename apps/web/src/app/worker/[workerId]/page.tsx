@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   AppStrings,
   ArrowDownLeftIcon,
+  CheckCircleIcon,
 } from '@/assets';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -58,6 +59,26 @@ export default function WorkerPortalPage({ params }: { params: Promise<{ workerI
         </div>
       </div>
 
+      {/* Compliance Onboarding Progress Tracker */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-secondary/60 p-3 rounded-xl border border-border">
+        <div className="flex items-center gap-1.5 text-caption font-semibold text-success">
+          <CheckCircleIcon className="h-3.5 w-3.5 shrink-0" />
+          <span>1. Invite Signed</span>
+        </div>
+        <div className={`flex items-center gap-1.5 text-caption font-semibold ${isKycVerified ? 'text-success' : 'text-warning'}`}>
+          <CheckCircleIcon className="h-3.5 w-3.5 shrink-0" />
+          <span>2. Identity Check</span>
+        </div>
+        <div className={`flex items-center gap-1.5 text-caption font-semibold ${defaultMethod ? 'text-success' : 'text-warning'}`}>
+          <CheckCircleIcon className="h-3.5 w-3.5 shrink-0" />
+          <span>3. Bank Linked</span>
+        </div>
+        <div className={`flex items-center gap-1.5 text-caption font-semibold ${(isKycVerified && defaultMethod) ? 'text-success' : 'text-muted-foreground'}`}>
+          <CheckCircleIcon className="h-3.5 w-3.5 shrink-0" />
+          <span>4. Payout Ready</span>
+        </div>
+      </div>
+
       {/* Balance Card */}
       <Card variant="glow" className="flex flex-col gap-2 bg-card">
         <span className="text-overline text-muted-foreground">Available Earnings</span>
@@ -89,6 +110,7 @@ export default function WorkerPortalPage({ params }: { params: Promise<{ workerI
       {/* Bank Account Card */}
       <BankSection
         workerId={resolvedParams.workerId}
+        workerName={worker?.name}
         payoutMethods={payoutMethods}
         onSuccess={refetchAll}
       />
@@ -103,3 +125,4 @@ export default function WorkerPortalPage({ params }: { params: Promise<{ workerI
     </div>
   );
 }
+

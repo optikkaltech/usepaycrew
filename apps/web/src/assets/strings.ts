@@ -107,6 +107,21 @@ export const AppStrings = {
     confirmButton: 'Confirm Withdrawal',
     receiptTitle: 'Transaction Receipt',
   },
+  checkers: {
+    insufficientBalance: 'Insufficient Company Treasury Balance',
+    requiredAmount: 'Required:',
+    availableAmount: 'Available:',
+    fundTreasuryCta: 'Fund Account via Korapay or Crypto',
+    workerNotReady: 'Contractor Not Ready for Payout',
+    kycPending: 'Identity check (NIN/BVN) pending',
+    contractUnsigned: 'Contract agreement unsigned',
+    noPayoutMethod: 'No bank account or wallet linked',
+    nameMismatchWarning: 'Bank Account Name Mismatch',
+    nameMismatchDescription: 'Account name does not match contractor legal identity. Payouts to third-party accounts may be flagged under CBN regulations.',
+    twoFactorRequired: 'Two-Factor Authentication (OTP)',
+    twoFactorHint: 'Enter your 6-digit authenticator code to confirm payout disburse',
+    makerCheckerTitle: 'Maker-Checker Approval Required',
+  },
   common: {
     confirm: 'Confirm',
     cancel: 'Cancel',
@@ -114,6 +129,7 @@ export const AppStrings = {
     save: 'Save Changes',
     close: 'Close',
   },
+
   errors: {
     generic: 'An unexpected error occurred. Please try again.',
     network: 'Unable to connect to service. Check your connection.',

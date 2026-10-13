@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-import { BuildingIcon, CheckCircleIcon } from '@/assets';
+import { BuildingIcon, CheckCircleIcon, ShieldAlertIcon, AppStrings } from '@/assets';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -23,11 +23,13 @@ const defaultBanks = [
 
 interface BankSectionProps {
   workerId: string;
+  workerName?: string;
   payoutMethods: any[];
   onSuccess: () => void;
 }
 
-export function BankSection({ workerId, payoutMethods, onSuccess }: BankSectionProps) {
+export function BankSection({ workerId, workerName, payoutMethods, onSuccess }: BankSectionProps) {
+
   const toast = useToast();
   const [banks, setBanks] = useState(defaultBanks);
   const [bankCode, setBankCode] = useState('058');
@@ -133,6 +135,20 @@ export function BankSection({ workerId, payoutMethods, onSuccess }: BankSectionP
           </div>
         )}
 
+        {resolvedName && workerName && !(() => {
+          const cleanResolved = resolvedName.toLowerCase().replace(/[^a-z]/g, '');
+          const parts = workerName.toLowerCase().split(/\s+/).filter(Boolean);
+          return parts.some((p) => cleanResolved.includes(p));
+        })() && (
+          <div className="rounded-lg bg-warning/10 border border-warning/30 p-2.5 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-warning font-semibold text-caption">
+              <ShieldAlertIcon className="h-3.5 w-3.5 shrink-0" />
+              <span>{AppStrings.checkers.nameMismatchWarning}</span>
+            </div>
+            <p className="text-caption text-muted-foreground">{AppStrings.checkers.nameMismatchDescription}</p>
+          </div>
+        )}
+
         <Button onClick={handleSave} disabled={!resolvedName} isLoading={loading}>
           Save Bank Account
         </Button>
@@ -140,3 +156,4 @@ export function BankSection({ workerId, payoutMethods, onSuccess }: BankSectionP
     </Card>
   );
 }
+

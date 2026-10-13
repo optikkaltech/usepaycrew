@@ -55,63 +55,84 @@ export default function WorkersPage() {
               <th className="p-4">{AppStrings.workers.name}</th>
               <th className="p-4">{AppStrings.workers.role}</th>
               <th className="p-4">{AppStrings.workers.payAmount}</th>
-              <th className="p-4">{AppStrings.workers.status}</th>
+              <th className="p-4">Compliance &amp; KYC</th>
+              <th className="p-4">Readiness</th>
               <th className="p-4 text-right">{AppStrings.workers.actions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {workers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-body-md text-muted-foreground">
+                <td colSpan={6} className="p-8 text-center text-body-md text-muted-foreground">
                   No contractors added yet. Click &apos;Add Worker&apos; to invite your first remote team member.
                 </td>
               </tr>
             ) : (
-              workers.map((worker: any) => (
-                <tr key={worker.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="p-4">
-                    <p className="text-label-md font-semibold text-foreground">{worker.name}</p>
-                    <p className="text-caption text-muted-foreground">{worker.email}</p>
-                  </td>
-                  <td className="p-4 text-body-sm text-foreground">{worker.role}</td>
-                  <td className="p-4 text-body-sm font-semibold text-foreground">
-                    {formatCurrency(worker.payAmount, worker.payCurrency)}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={clsx(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-semibold',
-                        worker.status === 'ACTIVE' && 'bg-success/15 text-success',
-                        worker.status === 'VERIFIED' && 'bg-brand-sky/15 text-brand-sky',
-                        worker.status === 'ONBOARDING' && 'bg-warning/15 text-warning',
-                        worker.status === 'INVITED' && 'bg-secondary text-muted-foreground',
-                      )}
-                    >
-                      {worker.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    {worker.inviteToken && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyInvite(worker.inviteToken, worker.id)}
-                      >
-                        {copiedId === worker.id ? (
-                          <CheckIcon className="h-4 w-4 text-success" />
-                        ) : (
-                          <CopyIcon className="h-4 w-4" />
+              workers.map((worker: any) => {
+                const isContractSigned = worker.status !== 'INVITED';
+                const isKycVerified = worker.status === 'ACTIVE' || worker.status === 'VERIFIED';
+                const isReady = isContractSigned && isKycVerified;
+
+                return (
+                  <tr key={worker.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="p-4">
+                      <p className="text-label-md font-semibold text-foreground">{worker.name}</p>
+                      <p className="text-caption text-muted-foreground">{worker.email}</p>
+                    </td>
+                    <td className="p-4 text-body-sm text-foreground">{worker.role}</td>
+                    <td className="p-4 text-body-sm font-semibold text-foreground">
+                      {formatCurrency(worker.payAmount, worker.payCurrency)}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1">
+                        <span className={clsx(
+                          'inline-flex items-center gap-1 text-caption font-semibold',
+                          isContractSigned ? 'text-success' : 'text-warning'
+                        )}>
+                          {isContractSigned ? '✓ Contract Signed' : '⏳ Awaiting Signature'}
+                        </span>
+                        <span className={clsx(
+                          'inline-flex items-center gap-1 text-caption',
+                          isKycVerified ? 'text-brand-sky font-semibold' : 'text-muted-foreground'
+                        )}>
+                          {isKycVerified ? '✓ Prembly KYC Verified' : '○ KYC Pending'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span
+                        className={clsx(
+                          'inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-semibold',
+                          isReady ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'
                         )}
-                        <span className="ml-1.5 hidden sm:inline">Copy Invite</span>
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))
+                      >
+                        {isReady ? 'Ready for Pay' : 'Setup Incomplete'}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      {worker.inviteToken && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyInvite(worker.inviteToken, worker.id)}
+                        >
+                          {copiedId === worker.id ? (
+                            <CheckIcon className="h-4 w-4 text-success" />
+                          ) : (
+                            <CopyIcon className="h-4 w-4" />
+                          )}
+                          <span className="ml-1.5 hidden sm:inline">Copy Invite</span>
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </Card>
+
 
       <AddWorkerModal
         isOpen={modalOpen}
