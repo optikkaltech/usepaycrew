@@ -1,0 +1,15 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+allowBuilds:
+  argon2: true
+  msgpackr-extract: true
+  '@scarf/scarf': true
+  sharp: true
+
+onlyBuiltDependencies:
+  - argon2
+  - msgpackr-extract
+  - '@scarf/scarf'
+  - sharp

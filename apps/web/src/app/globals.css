@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #090d16;
+
+    --card: #ffffff;
+    --card-foreground: #090d16;
+
+    --popover: #ffffff;
+    --popover-foreground: #090d16;
+
+    --primary: #0066ff;
+    --primary-foreground: #ffffff;
+
+    --secondary: #f4f6fb;
+    --secondary-foreground: #090d16;
+
+    --muted: #f4f6fb;
+    --muted-foreground: #64748b;
+
+    --accent: #f0fdf9;
+    --accent-foreground: #0d9488;
+
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #0066ff;
+
+    --brand-sky: #0284c7;
+    --brand-ocean: #0369a1;
+    --brand-navy: #090d16;
+    --brand-deep: #0066ff;
+    --brand-teal: #0d9488;
+    --brand-glow: rgba(0, 102, 255, 0.12);
+
+    --success: #10b981;
+    --success-foreground: #ffffff;
+    --warning: #f59e0b;
+    --warning-foreground: #ffffff;
+    --info: #0066ff;
+    --info-foreground: #ffffff;
+
+    --radius: 0.75rem;
+
+    --shadow-xs: 0 1px 2px 0 rgba(9, 13, 22, 0.04);
+    --shadow-sm: 0 1px 3px 0 rgba(9, 13, 22, 0.08), 0 1px 2px -1px rgba(9, 13, 22, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(9, 13, 22, 0.08), 0 2px 4px -2px rgba(9, 13, 22, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(9, 13, 22, 0.08), 0 4px 6px -4px rgba(9, 13, 22, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(9, 13, 22, 0.08), 0 8px 10px -6px rgba(9, 13, 22, 0.04);
+    --shadow-brand: 0 8px 24px -4px rgba(0, 102, 255, 0.25);
+    --shadow-glow: 0 0 25px -2px rgba(13, 148, 136, 0.25);
+  }
+
+  .dark {
+    --background: #090d16;
+    --foreground: #f8fafc;
+
+    --card: #111827;
+    --card-foreground: #f8fafc;
+
+    --popover: #111827;
+    --popover-foreground: #f8fafc;
+
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+
+    --secondary: #1f2937;
+    --secondary-foreground: #f8fafc;
+
+    --muted: #1f2937;
+    --muted-foreground: #94a3b8;
+
+    --accent: #132e2b;
+    --accent-foreground: #2dd4bf;
+
+    --destructive: #f87171;
+    --destructive-foreground: #ffffff;
+
+    --border: #1e293b;
+    --input: #1e293b;
+    --ring: #3b82f6;
+
+    --brand-sky: #38bdf8;
+    --brand-ocean: #0284c7;
+    --brand-navy: #030712;
+    --brand-deep: #2563eb;
+    --brand-teal: #14b8a6;
+    --brand-glow: rgba(59, 130, 246, 0.2);
+  }
+}
+
+@layer utilities {
+  .text-display-2xl {
+    font-size: 4.5rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+  .text-display-xl {
+    font-size: 3.75rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .text-display-lg {
+    font-size: 3rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .text-display-md {
+    font-size: 2.25rem;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  .text-display-sm {
+    font-size: 1.875rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .text-body-xl {
+    font-size: 1.25rem;
+    line-height: 1.75;
+    font-weight: 400;
+  }
+  .text-body-lg {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+  .text-body-md {
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+  .text-body-sm {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    font-weight: 400;
+  }
+  .text-body-xs {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    font-weight: 400;
+  }
+
+  .text-label-lg {
+    font-size: 0.875rem;
+    line-height: 1.25;
+    font-weight: 600;
+  }
+  .text-label-md {
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+  .text-label-sm {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
+  .text-caption {
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+  .text-overline {
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gradient-brand {
+    background: linear-gradient(135deg, var(--brand-sky) 0%, var(--brand-deep) 50%, var(--brand-navy) 100%);
+  }
+  .gradient-brand-text {
+    background: linear-gradient(135deg, var(--brand-sky) 0%, var(--brand-deep) 50%, var(--brand-navy) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .gradient-brand-subtle {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, rgba(0, 102, 255, 0.05) 50%, rgba(9, 13, 22, 0.02) 100%);
+  }
+}

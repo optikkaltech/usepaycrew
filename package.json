@@ -1,0 +1,17 @@
+{
+  "name": "paycrew-monorepo",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @paycrew/* dev",
+    "dev:api": "pnpm --filter @paycrew/api dev",
+    "dev:web": "pnpm --filter @paycrew/web dev",
+    "build": "pnpm --filter @paycrew/* build",
+    "test": "pnpm --filter @paycrew/* test",
+    "typecheck": "pnpm --filter @paycrew/* typecheck",
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
