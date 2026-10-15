@@ -81,7 +81,7 @@ export function FundingModal({ isOpen, onClose, fundingInfo }: FundingModalProps
 
           {/* Crypto Stablecoin Deposit */}
           <Card className="flex flex-col gap-2 bg-secondary/50">
-            <div className="flex items-center gap-2 text-brand-sky">
+            <div className="flex items-center gap-2 text-brand-emerald">
               <WalletIcon className="h-5 w-5" />
               <span className="text-label-lg font-bold">{AppStrings.dashboard.stablecoinAddressTitle}</span>
             </div>

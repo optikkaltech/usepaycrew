@@ -130,7 +130,7 @@ export default function SettingsPage() {
       {/* Provider Switcher Card */}
       <Card className="flex flex-col gap-4 border-border">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-sky/10 text-brand-sky">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-emerald/10 text-brand-emerald">
             <ShieldCheckIcon className="h-5 w-5" />
           </div>
           <div>

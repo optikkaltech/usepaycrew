@@ -123,7 +123,7 @@ export function WithdrawModal({ isOpen, onClose, onSuccess, workerId, defaultMet
 
             {estimate && (
               <Card className="bg-secondary/50 p-4 flex flex-col gap-1.5 text-body-xs">
-                <div className="flex items-center gap-1 text-brand-sky font-semibold mb-1">
+                <div className="flex items-center gap-1 text-brand-emerald font-semibold mb-1">
                   <ShieldCheckIcon className="h-4 w-4" />
                   <span>Statutory Fee &amp; Exchange Breakdown</span>
                 </div>

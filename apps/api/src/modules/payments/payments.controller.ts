@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { PaymentsService } from './payments.service';
-import { CreatePaymentDto, WebhookEventPayload } from './payments.types';
+import { CreatePaymentDto, CreateBatchPaymentDto, WebhookEventPayload } from './payments.types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -20,6 +20,12 @@ import { Currency, UserRole } from '@paycrew/shared-types';
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
+
+  @Get('rate')
+  async getRate(@Query('pair') pair?: string) {
+    const data = await this.paymentsService.getMarketRate(pair);
+    return { success: true, data };
+  }
 
   @Get('fee-estimate')
   @UseGuards(JwtAuthGuard)
@@ -36,6 +42,14 @@ export class PaymentsController {
   @Roles(UserRole.COMPANY_OWNER, UserRole.APPROVER)
   async payWorker(@Req() req: any, @Body() dto: CreatePaymentDto) {
     const data = await this.paymentsService.createPayment(req.user.companyId, dto);
+    return { success: true, data };
+  }
+
+  @Post('batch')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.COMPANY_OWNER, UserRole.APPROVER)
+  async payBatchWorkers(@Req() req: any, @Body() dto: CreateBatchPaymentDto) {
+    const data = await this.paymentsService.createBatchPayment(req.user.companyId, dto);
     return { success: true, data };
   }
 

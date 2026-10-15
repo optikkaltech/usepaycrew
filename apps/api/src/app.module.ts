@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { dataSourceOptions } from './database/data-source';
+import { validateEnv } from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { WorkersModule } from './modules/workers/workers.module';
@@ -19,7 +20,7 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     TypeOrmModule.forRoot(dataSourceOptions),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     ProvidersModule,

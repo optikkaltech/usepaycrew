@@ -87,6 +87,9 @@ export class WorkerEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   inviteToken: string | null;
 
+  @Column({ type: 'boolean', default: false })
+  autoCashoutEnabled: boolean;
+
   @Column({ type: 'timestamptz', nullable: true })
   inviteExpiresAt: Date | null;
 

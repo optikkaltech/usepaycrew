@@ -69,7 +69,7 @@ export default function DashboardPage() {
             <span className="text-display-xl font-extrabold text-foreground">
               {formatCurrency(availableUsd, 'USD')}
             </span>
-            <span className="text-display-sm font-semibold text-brand-sky">
+            <span className="text-display-sm font-semibold text-brand-emerald">
               ≈ {formatCurrency(availableNgn, 'NGN')}
             </span>
           </div>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-sky/10 text-brand-sky">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-emerald/10 text-brand-emerald">
             <WalletIcon className="h-6 w-6" />
           </div>
           <div>

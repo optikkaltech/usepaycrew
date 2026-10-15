@@ -14,6 +14,7 @@ import * as QRCode from 'qrcode';
 import { UserEntity, CompanyEntity } from '../../database/entities';
 import { UserRole, UserStatus } from '@paycrew/shared-types';
 import { AuthResponse, JwtPayload, LoginDto, RegisterDto } from './auth.types';
+import { maskEmail } from '../../common/utils/masking.util';
 
 @Injectable()
 export class AuthService {
@@ -67,7 +68,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const isMatch = await argon2.verify(user.passwordHash, dto.password);
+    if (!user.passwordHash || !user.passwordHash.startsWith('$argon2')) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const isMatch = await argon2.verify(user.passwordHash, dto.password).catch(() => false);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -171,6 +176,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
+        maskedEmail: maskEmail(user.email),
         fullName: user.fullName,
         role: user.role,
         status: user.status,

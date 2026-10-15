@@ -10,6 +10,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        heading: ['var(--font-inter)', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+      },
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
@@ -45,9 +49,9 @@ const config: Config = {
         input: 'var(--input)',
         ring: 'var(--ring)',
         brand: {
-          sky: 'var(--brand-sky)',
-          ocean: 'var(--brand-ocean)',
-          navy: 'var(--brand-navy)',
+          brunswick: 'var(--brand-brunswick)',
+          emerald: 'var(--brand-emerald)',
+          polar: 'var(--brand-polar)',
           deep: 'var(--brand-deep)',
           teal: 'var(--brand-teal)',
           glow: 'var(--brand-glow)',

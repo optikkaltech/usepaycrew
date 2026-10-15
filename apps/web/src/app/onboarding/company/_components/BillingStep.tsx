@@ -38,7 +38,7 @@ export function BillingStep({ onSubmit, isLoading }: BillingStepProps) {
         <p className="text-body-xs text-muted-foreground">
           Includes 10 active contractor seats, unlimited payroll runs, and auto-settlement.
         </p>
-        <p className="text-caption text-brand-sky font-semibold">
+        <p className="text-caption text-brand-emerald font-semibold">
           {AppStrings.subscriptions.extraWorkerRate}
         </p>
       </div>

@@ -1,6 +1,9 @@
 import { TokenService } from './token.service';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+const API_BASE =
+  typeof window !== 'undefined'
+    ? '/api/proxy'
+    : process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -27,6 +30,7 @@ async function request<T = any>(endpoint: string, options: RequestOptions = {}):
   }
 
   let response = await fetch(url, {
+    credentials: 'same-origin',
     ...options,
     headers,
   });
@@ -59,9 +63,20 @@ async function request<T = any>(endpoint: string, options: RequestOptions = {}):
     }
   }
 
-  const data = await response.json().catch(() => ({}));
+  const rawText = await response.text();
+  let data: any = {};
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    data = { message: rawText || `Request failed with status ${response.status}` };
+  }
+
   if (!response.ok) {
-    const message = data.message || `Request failed with status ${response.status}`;
+    const message =
+      (Array.isArray(data.message) ? data.message.join(', ') : data.message) ||
+      data.error ||
+      rawText ||
+      `Request failed with status ${response.status}`;
     throw new Error(message);
   }
 

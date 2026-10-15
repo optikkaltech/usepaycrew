@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { http } from '@/services';
 import { formatCurrency } from '@/utils';
+import { useToast } from '@/hooks';
+import clsx from 'clsx';
 import { KycSection } from './_components/KycSection';
 import { BankSection } from './_components/BankSection';
 import { WithdrawModal } from './_components/WithdrawModal';
@@ -18,6 +20,8 @@ import { WithdrawModal } from './_components/WithdrawModal';
 export default function WorkerPortalPage({ params }: { params: Promise<{ workerId: string }> }) {
   const resolvedParams = use(params);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [isUpdatingPreference, setIsUpdatingPreference] = useState(false);
+  const toast = useToast();
 
   const { data: worker, refetch: refetchWorker } = useQuery({
     queryKey: ['worker', resolvedParams.workerId],
@@ -34,23 +38,49 @@ export default function WorkerPortalPage({ params }: { params: Promise<{ workerI
     queryFn: () => http.get(`/payout-methods/${resolvedParams.workerId}`),
   });
 
+  const { data: rateData } = useQuery({
+    queryKey: ['marketRate'],
+    queryFn: () => http.get('/payments/rate'),
+  });
+
   const refetchAll = () => {
     refetchWorker();
     refetchBalance();
     refetchMethods();
   };
 
+  const liveRate = rateData?.rate || 1540;
   const availableUsd = balanceData?.availableBalance ? parseFloat(balanceData.availableBalance) : 0;
-  const availableNgn = availableUsd * 1450;
+  const availableNgn = availableUsd * liveRate;
   const isKycVerified = worker?.status === 'ACTIVE' || worker?.status === 'VERIFIED';
   const defaultMethod = payoutMethods.find((m: any) => m.isDefault);
+
+  const toggleAutoCashout = async () => {
+    setIsUpdatingPreference(true);
+    try {
+      const nextState = !worker?.autoCashoutEnabled;
+      await http.patch(`/workers/${resolvedParams.workerId}/preferences`, {
+        autoCashoutEnabled: nextState,
+      });
+      await refetchWorker();
+      toast.success(
+        nextState
+          ? 'Auto-Cashout enabled: Salary will automatically deposit to your bank'
+          : 'Auto-Cashout disabled: Salary will remain safely in USDT',
+      );
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update preferences');
+    } finally {
+      setIsUpdatingPreference(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8 max-w-2xl mx-auto flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
-          <span className="text-overline text-brand-sky font-bold">Worker Portal</span>
+          <span className="text-overline text-brand-emerald font-bold">Worker Portal</span>
           <h1 className="text-display-sm text-foreground font-extrabold">{worker?.name || 'Contractor'}</h1>
           <p className="text-caption text-muted-foreground">{worker?.role}</p>
         </div>
@@ -81,15 +111,50 @@ export default function WorkerPortalPage({ params }: { params: Promise<{ workerI
 
       {/* Balance Card */}
       <Card variant="glow" className="flex flex-col gap-2 bg-card">
-        <span className="text-overline text-muted-foreground">Available Earnings</span>
+        <div className="flex items-center justify-between">
+          <span className="text-overline text-muted-foreground">Available Earnings</span>
+          <span className="text-caption font-medium text-brand-emerald bg-brand-emerald/10 px-2 py-0.5 rounded-full">
+            ⚡ 1 USDT ≈ ₦{liveRate.toLocaleString()}
+          </span>
+        </div>
         <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
           <span className="text-display-xl font-black text-foreground">
             {formatCurrency(availableUsd, 'USD')}
           </span>
-          <span className="text-display-sm font-semibold text-brand-sky">
+          <span className="text-display-sm font-semibold text-brand-emerald">
             ≈ {formatCurrency(availableNgn, 'NGN')}
           </span>
         </div>
+
+        {/* Auto-Cashout Preference Toggle */}
+        <div className="mt-3 flex items-center justify-between rounded-xl bg-secondary/50 p-3.5 border border-border">
+          <div>
+            <p className="text-label-md font-semibold text-foreground">Auto-Cashout on Payday</p>
+            <p className="text-caption text-muted-foreground">
+              {worker?.autoCashoutEnabled
+                ? 'Active: Payouts automatically convert & deposit to your bank'
+                : 'Inactive: Payouts stay safely in USDT until you cash out'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleAutoCashout}
+            disabled={isUpdatingPreference}
+            className={clsx(
+              'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+              worker?.autoCashoutEnabled ? 'bg-primary' : 'bg-muted',
+            )}
+            aria-label="Toggle Auto-Cashout"
+          >
+            <span
+              className={clsx(
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                worker?.autoCashoutEnabled ? 'translate-x-5' : 'translate-x-0',
+              )}
+            />
+          </button>
+        </div>
+
         <Button
           onClick={() => setWithdrawOpen(true)}
           disabled={availableUsd <= 0}

@@ -26,8 +26,13 @@ export class LedgerService {
     manager?: EntityManager,
   ): Promise<BalanceSummary> {
     const repo = manager ? manager.getRepository(LedgerEntryEntity) : this.ledgerRepo;
-    const qb = repo.createQueryBuilder('entry')
-      .where('entry.currency = :currency', { currency: filter.currency });
+    const qb = repo.createQueryBuilder('entry');
+    const isUsdGroup = [Currency.USD, Currency.USDT, Currency.USDC].includes(filter.currency);
+    if (isUsdGroup) {
+      qb.where('entry.currency IN (:...currencies)', { currencies: [Currency.USD, Currency.USDT, Currency.USDC] });
+    } else {
+      qb.where('entry.currency = :currency', { currency: filter.currency });
+    }
 
     if (filter.companyId) {
       qb.andWhere('entry.companyId = :companyId AND entry.accountType = :accType', {

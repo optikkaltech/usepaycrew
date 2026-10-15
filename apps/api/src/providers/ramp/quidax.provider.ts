@@ -27,12 +27,16 @@ export class QuidaxRampProvider implements IRampProvider {
     ARBITRUM: 'arbitrum',
   };
 
+  private isMockMode(): boolean {
+    return !this.secretKey || this.secretKey.startsWith('sec_test_');
+  }
+
   async generateDepositAddress(currency: Currency, network = 'TRON'): Promise<DepositAddressResult> {
     const qdxCurrency = currency.toLowerCase();
     const qdxNetwork = this.networkMap[network.toUpperCase()] || network.toLowerCase();
     this.logger.log(`Quidax: Requesting deposit address for ${qdxCurrency} on ${qdxNetwork}`);
 
-    if (this.secretKey) {
+    if (!this.isMockMode()) {
       try {
         const resp = await fetch(`${this.baseUrl}/users/me/wallets/${qdxCurrency}/addresses?network=${qdxNetwork}`, {
           method: 'POST',
@@ -49,8 +53,10 @@ export class QuidaxRampProvider implements IRampProvider {
             memo: json.data.destination_tag || undefined,
           };
         }
+        throw new Error(json.message || `Quidax address generation failed: HTTP ${resp.status}`);
       } catch (err: any) {
-        this.logger.warn(`Quidax API address request failed: ${err.message}. Using high-fidelity fallback`);
+        this.logger.error(`Quidax API address request failed: ${err.message}`);
+        throw err;
       }
     }
 
@@ -70,7 +76,7 @@ export class QuidaxRampProvider implements IRampProvider {
     const qdxCurrency = request.currency.toLowerCase();
     this.logger.log(`Quidax: Initiating payout of ${request.amount} ${qdxCurrency} to ${request.recipientAccount}`);
 
-    if (this.secretKey) {
+    if (!this.isMockMode()) {
       try {
         const resp = await fetch(`${this.baseUrl}/users/me/withdraws`, {
           method: 'POST',
@@ -96,8 +102,10 @@ export class QuidaxRampProvider implements IRampProvider {
             rawResponse: json.data,
           };
         }
+        throw new Error(json.message || `Quidax payout failed: HTTP ${resp.status}`);
       } catch (err: any) {
-        this.logger.warn(`Quidax payout failed: ${err.message}`);
+        this.logger.error(`Quidax payout failed: ${err.message}`);
+        throw err;
       }
     }
 

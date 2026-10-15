@@ -10,6 +10,7 @@ import {
   AddWalletDto,
   BankAccountLookupResult,
 } from './payout-methods.types';
+import { maskAccountNumber, maskWalletAddress } from '../../common/utils/masking.util';
 
 @Injectable()
 export class PayoutMethodsService {
@@ -84,11 +85,32 @@ export class PayoutMethodsService {
     return this.pmRepo.save(pm);
   }
 
-  async getMethods(workerId: string): Promise<PayoutMethodEntity[]> {
-    return this.pmRepo.find({
+  async getMethods(workerId: string): Promise<any[]> {
+    const methods = await this.pmRepo.find({
       where: { workerId },
       order: { isDefault: 'DESC', createdAt: 'DESC' },
     });
+    return methods.map((m) => ({
+      ...m,
+      accountReference:
+        m.type === PayoutMethodType.BANK_ACCOUNT
+          ? maskAccountNumber(m.accountReference)
+          : maskWalletAddress(m.accountReference),
+      maskedReference:
+        m.type === PayoutMethodType.BANK_ACCOUNT
+          ? maskAccountNumber(m.accountReference)
+          : maskWalletAddress(m.accountReference),
+      canReveal: true,
+    }));
+  }
+
+  async revealMethod(id: string): Promise<{ id: string; accountReference: string }> {
+    const pm = await this.pmRepo.findOne({ where: { id } });
+    if (!pm) throw new NotFoundException('Payout method not found');
+    return {
+      id: pm.id,
+      accountReference: pm.accountReference,
+    };
   }
 }
 

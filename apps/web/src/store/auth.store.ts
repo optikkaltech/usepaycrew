@@ -5,6 +5,7 @@ import { TokenService } from '@/services/token.service';
 export interface UserProfile {
   id: string;
   email: string;
+  maskedEmail?: string;
   fullName: string;
   role: UserRole;
   status: UserStatus;

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { PayoutMethodType } from '@paycrew/shared-types';
 import { WorkerEntity } from './worker.entity';
+import { encryptionTransformer } from '../../common/encryption/encryption.transformer';
 
 @Entity('payout_methods')
 export class PayoutMethodEntity {
@@ -32,7 +33,7 @@ export class PayoutMethodEntity {
   })
   type: PayoutMethodType;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 500, transformer: encryptionTransformer })
   accountReference: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })

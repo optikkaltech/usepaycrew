@@ -12,6 +12,7 @@ import { KycProviderFactory } from './kyc/kyc.factory';
 
 import { KorapayBankingProvider } from './banking/korapay-banking.provider';
 import { BankingProviderFactory } from './banking/banking.factory';
+import { MailerSendProvider } from './email/mailersend.provider';
 
 @Module({
   providers: [
@@ -28,11 +29,13 @@ import { BankingProviderFactory } from './banking/banking.factory';
 
     KorapayBankingProvider,
     BankingProviderFactory,
+    MailerSendProvider,
   ],
   exports: [
     RampProviderFactory,
     KycProviderFactory,
     BankingProviderFactory,
+    MailerSendProvider,
   ],
 })
 export class ProvidersModule {}

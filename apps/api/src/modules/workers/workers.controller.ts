@@ -2,13 +2,14 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   Param,
   UseGuards,
   Req,
 } from '@nestjs/common';
 import { WorkersService } from './workers.service';
-import { CreateWorkerDto, WorkerAcceptInviteDto } from './workers.types';
+import { CreateWorkerDto, WorkerAcceptInviteDto, UpdateWorkerPreferencesDto } from './workers.types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -49,6 +50,16 @@ export class WorkersController {
   @UseGuards(JwtAuthGuard)
   async getWorker(@Param('id') id: string) {
     const data = await this.workersService.getWorkerById(id);
+    return { success: true, data };
+  }
+
+  @Patch(':id/preferences')
+  @UseGuards(JwtAuthGuard)
+  async updatePreferences(
+    @Param('id') id: string,
+    @Body() dto: UpdateWorkerPreferencesDto,
+  ) {
+    const data = await this.workersService.updatePreferences(id, dto.autoCashoutEnabled);
     return { success: true, data };
   }
 }

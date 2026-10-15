@@ -36,7 +36,7 @@ export function CompleteStep({ company, onGoToDashboard }: CompleteStepProps) {
         </div>
 
         <div className="rounded-xl border border-border bg-secondary/50 p-4">
-          <div className="flex items-center gap-2 text-brand-sky mb-1">
+          <div className="flex items-center gap-2 text-brand-emerald mb-1">
             <WalletIcon className="h-4 w-4" />
             <span className="text-label-md font-bold">Multi-Chain Stablecoin Deposit</span>
           </div>

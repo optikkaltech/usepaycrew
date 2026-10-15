@@ -47,4 +47,10 @@ export class PayoutMethodsController {
     const data = await this.pmService.getMethods(workerId);
     return { success: true, data };
   }
+
+  @Post(':id/reveal')
+  async revealMethod(@Param('id') id: string) {
+    const data = await this.pmService.revealMethod(id);
+    return { success: true, data };
+  }
 }

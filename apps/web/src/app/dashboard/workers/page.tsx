@@ -14,12 +14,15 @@ import { Card } from '@/components/ui/Card';
 import { http } from '@/services';
 import { formatCurrency } from '@/utils';
 import { useToast } from '@/hooks';
+import { MaskedField } from '@/components/ui/MaskedField';
+import { usePrivacyStore } from '@/store';
 import { AddWorkerModal } from './_components/AddWorkerModal';
 
 export default function WorkersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const toast = useToast();
+  const { isPrivacyMode } = usePrivacyStore();
 
   const { data: workers = [], refetch } = useQuery({
     queryKey: ['workers'],
@@ -77,11 +80,20 @@ export default function WorkersPage() {
                   <tr key={worker.id} className="hover:bg-secondary/30 transition-colors">
                     <td className="p-4">
                       <p className="text-label-md font-semibold text-foreground">{worker.name}</p>
-                      <p className="text-caption text-muted-foreground">{worker.email}</p>
+                      <MaskedField
+                        value={worker.email}
+                        maskedValue={worker.maskedEmail}
+                        type="email"
+                        allowReveal={true}
+                        allowCopy={true}
+                        className="text-muted-foreground"
+                      />
                     </td>
                     <td className="p-4 text-body-sm text-foreground">{worker.role}</td>
                     <td className="p-4 text-body-sm font-semibold text-foreground">
-                      {formatCurrency(worker.payAmount, worker.payCurrency)}
+                      <span className={clsx(isPrivacyMode && 'select-none blur-sm transition-all')}>
+                        {formatCurrency(worker.payAmount, worker.payCurrency)}
+                      </span>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col gap-1">
@@ -93,7 +105,7 @@ export default function WorkersPage() {
                         </span>
                         <span className={clsx(
                           'inline-flex items-center gap-1 text-caption',
-                          isKycVerified ? 'text-brand-sky font-semibold' : 'text-muted-foreground'
+                          isKycVerified ? 'text-brand-emerald font-semibold' : 'text-muted-foreground'
                         )}>
                           {isKycVerified ? '✓ Prembly KYC Verified' : '○ KYC Pending'}
                         </span>

@@ -4,8 +4,13 @@ import { WorkerEntity, ContractEntity, UserEntity } from '../../database/entitie
 import { WorkersService } from './workers.service';
 import { WorkersController } from './workers.controller';
 
+import { ProvidersModule } from '../../providers/providers.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([WorkerEntity, ContractEntity, UserEntity])],
+  imports: [
+    TypeOrmModule.forFeature([WorkerEntity, ContractEntity, UserEntity]),
+    ProvidersModule,
+  ],
   controllers: [WorkersController],
   providers: [WorkersService],
   exports: [WorkersService],

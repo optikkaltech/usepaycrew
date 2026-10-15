@@ -13,8 +13,12 @@ import {
   LogOutIcon,
   MenuIcon,
   XIcon,
+  EyeIcon,
+  EyeOffIcon,
 } from '@/assets';
 import { useAuth, useOnboardingGate } from '@/hooks';
+import { MaskedField } from '@/components/ui/MaskedField';
+import { usePrivacyStore } from '@/store';
 
 const navItems = [
   { href: '/dashboard', label: AppStrings.navigation.dashboard, icon: LayersIcon },
@@ -27,6 +31,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { logout, fetchProfile, user } = useAuth();
   const { isReady } = useOnboardingGate();
+  const { isPrivacyMode, togglePrivacyMode } = usePrivacyStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -52,13 +57,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
           <span className="text-display-sm text-foreground font-bold">{AppStrings.appName}</span>
         </Link>
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="flex h-11 w-11 items-center justify-center rounded-lg border border-border text-foreground hover:bg-secondary"
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={togglePrivacyMode}
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-border text-foreground hover:bg-secondary"
+            title={isPrivacyMode ? 'Disable Privacy Mode' : 'Enable Privacy Mode'}
+            aria-label="Toggle Privacy Mode"
+          >
+            {isPrivacyMode ? <EyeOffIcon className="h-5 w-5 text-emerald-500" /> : <EyeIcon className="h-5 w-5" />}
+          </button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-border text-foreground hover:bg-secondary"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+          </button>
+        </div>
       </header>
 
       {/* Mobile Drawer */}
@@ -109,12 +124,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-border lg:bg-secondary/40 lg:p-6">
-        <Link href="/dashboard" className="flex items-center gap-2 mb-8">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold shadow-brand">
-            P
-          </div>
-          <span className="text-display-sm font-extrabold text-foreground">{AppStrings.appName}</span>
-        </Link>
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold shadow-brand">
+              P
+            </div>
+            <span className="text-display-sm font-extrabold text-foreground">{AppStrings.appName}</span>
+          </Link>
+          <button
+            onClick={togglePrivacyMode}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            title={isPrivacyMode ? 'Privacy Mode Active' : 'Turn on Privacy Mode'}
+            aria-label="Toggle Privacy Mode"
+          >
+            {isPrivacyMode ? <EyeOffIcon className="h-4 w-4 text-emerald-500" /> : <EyeIcon className="h-4 w-4" />}
+          </button>
+        </div>
 
         <nav className="flex flex-col gap-1.5 flex-1">
           {navItems.map((item) => {
@@ -141,7 +166,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="pt-6 border-t border-border">
           <div className="mb-3 px-3">
             <p className="text-label-md text-foreground font-medium truncate">{user?.fullName || 'Employer Admin'}</p>
-            <p className="text-caption text-muted-foreground truncate">{user?.email}</p>
+            <MaskedField
+              value={user?.email || ''}
+              maskedValue={user?.maskedEmail}
+              type="email"
+              allowReveal={true}
+              allowCopy={true}
+              className="text-muted-foreground text-caption"
+            />
           </div>
           <button
             onClick={logout}

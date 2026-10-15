@@ -122,7 +122,7 @@ export function DisbursePaymentModal({ isOpen, onClose, onSuccess, workers }: Di
 
           {feeData && (
             <Card className="bg-secondary/50 p-4">
-              <div className="flex items-center gap-1.5 text-brand-sky mb-2">
+              <div className="flex items-center gap-1.5 text-brand-emerald mb-2">
                 <ShieldCheckIcon className="h-4 w-4" />
                 <span className="text-label-sm font-semibold">{AppStrings.payments.feeSummary}</span>
               </div>

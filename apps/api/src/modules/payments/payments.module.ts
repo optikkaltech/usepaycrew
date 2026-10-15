@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentEntity, WorkerEntity, CompanyEntity } from '../../database/entities';
 import { PaymentsService } from './payments.service';
+import { PaymentsWebhookService } from './payments-webhook.service';
 import { PaymentsController } from './payments.controller';
 import { LedgerModule } from '../ledger/ledger.module';
 import { ProvidersModule } from '../../providers/providers.module';
@@ -13,8 +14,7 @@ import { ProvidersModule } from '../../providers/providers.module';
     ProvidersModule,
   ],
   controllers: [PaymentsController],
-  providers: [PaymentsService],
-  exports: [PaymentsService],
+  providers: [PaymentsService, PaymentsWebhookService],
+  exports: [PaymentsService, PaymentsWebhookService],
 })
 export class PaymentsModule {}
-

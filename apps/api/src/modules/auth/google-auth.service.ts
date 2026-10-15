@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 import { UserEntity, CompanyEntity } from '../../database/entities';
 import { UserRole, UserStatus } from '@paycrew/shared-types';
 import { AuthResponse, JwtPayload } from './auth.types';
+import { maskEmail } from '../../common/utils/masking.util';
 
 export interface GoogleAuthDto {
   credential?: string;
@@ -124,6 +125,7 @@ export class GoogleAuthService {
       user: {
         id: user.id,
         email: user.email,
+        maskedEmail: maskEmail(user.email),
         fullName: user.fullName,
         role: user.role,
         status: user.status,
