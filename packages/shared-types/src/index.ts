@@ -71,6 +71,7 @@ export enum SubscriptionStatus {
 }
 
 export enum SubscriptionPlan {
+  FREE = 'FREE',
   STARTER = 'STARTER',
   GROWTH = 'GROWTH',
   ENTERPRISE = 'ENTERPRISE',

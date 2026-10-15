@@ -6,7 +6,7 @@ import { ChevronDownIcon, HelpCircleIcon } from '@/assets';
 const faqs = [
   {
     q: 'How do we fund our company treasury in Naira?',
-    a: 'Upon signup, your company receives a dedicated Korapay NUBAN virtual account issued directly in your business name. Simply initiate an instant bank transfer from any Nigerian corporate bank account (GTBank, Access, Zenith, etc.) and your treasury balance is credited immediately.',
+    a: 'You can fund your treasury instantly via debit/credit card or by depositing stablecoins (USDT/USDC). Once processed, your treasury balance is credited immediately.',
   },
   {
     q: 'How do contractors cash out to Nigerian bank accounts?',

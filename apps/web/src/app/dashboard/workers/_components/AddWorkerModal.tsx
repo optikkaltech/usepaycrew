@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { AppStrings, XIcon } from '@/assets';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { http } from '@/services';
+import { WorkerService } from '@/services';
 import { useToast } from '@/hooks';
 import { normalizeError } from '@/utils';
 import { Currency, PayFrequency } from '@paycrew/shared-types';
@@ -28,13 +28,15 @@ interface AddWorkerModalProps {
   onSuccess: () => void;
 }
 
+import { useMutation } from '@tanstack/react-query';
+
 export function AddWorkerModal({ isOpen, onClose, onSuccess }: AddWorkerModalProps) {
   const toast = useToast();
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<WorkerFormValues>({
     resolver: zodResolver(workerSchema),
     defaultValues: {
@@ -43,18 +45,25 @@ export function AddWorkerModal({ isOpen, onClose, onSuccess }: AddWorkerModalPro
     },
   });
 
-  if (!isOpen) return null;
-
-  const onSubmit = async (values: WorkerFormValues) => {
-    try {
-      await http.post('/workers', values);
+  const workerMutation = useMutation({
+    mutationFn: WorkerService.create,
+    onSuccess: () => {
       toast.success(AppStrings.workers.inviteSuccess);
       reset();
       onSuccess();
       onClose();
-    } catch (err) {
+    },
+    onError: (err) => {
       toast.error(normalizeError(err).message);
-    }
+    },
+  });
+
+  if (!isOpen) return null;
+
+  const isSubmitting = workerMutation.isPending;
+
+  const onSubmit = (values: WorkerFormValues) => {
+    workerMutation.mutate(values);
   };
 
   return (

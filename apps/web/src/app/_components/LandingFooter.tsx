@@ -26,7 +26,7 @@ export function LandingFooter() {
     {
       title: 'Rails & Partners',
       links: [
-        { label: 'Korapay Virtual NUBANs', href: '#' },
+        { label: 'Instant Card & Bank Billing', href: '#' },
         { label: 'Quidax Liquidity Off-Ramp', href: '#' },
         { label: 'Base USDC Rails', href: '#' },
         { label: 'TRON USDT Network', href: '#' },

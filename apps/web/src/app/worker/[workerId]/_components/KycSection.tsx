@@ -5,10 +5,12 @@ import { AppStrings, ShieldCheckIcon, ShieldAlertIcon } from '@/assets';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { http } from '@/services';
+import { KycService } from '@/services';
 import { useToast } from '@/hooks';
 import { normalizeError } from '@/utils';
 import { KycCheckType } from '@paycrew/shared-types';
+
+import { useMutation } from '@tanstack/react-query';
 
 interface KycSectionProps {
   workerId: string;
@@ -19,28 +21,32 @@ interface KycSectionProps {
 export function KycSection({ workerId, isVerified, onSuccess }: KycSectionProps) {
   const toast = useToast();
   const [bvn, setBvn] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const kycMutation = useMutation({
+    mutationFn: async () => {
+      return KycService.submitWorkerKyc(workerId, {
+        checkType: KycCheckType.BVN,
+        identifier: bvn,
+      });
+    },
+    onSuccess: () => {
+      toast.success(AppStrings.kyc.verified);
+      onSuccess();
+    },
+    onError: (err) => {
+      toast.error(normalizeError(err).message);
+    },
+  });
+
+  const loading = kycMutation.isPending;
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (bvn.length !== 11) {
       toast.error('Please enter a valid 11-digit BVN or NIN');
       return;
     }
-
-    setLoading(true);
-    try {
-      await http.post(`/kyc/${workerId}/submit`, {
-        checkType: KycCheckType.BVN,
-        identifier: bvn,
-      });
-      toast.success(AppStrings.kyc.verified);
-      onSuccess();
-    } catch (err) {
-      toast.error(normalizeError(err).message);
-    } finally {
-      setLoading(false);
-    }
+    kycMutation.mutate();
   };
 
   if (isVerified) {

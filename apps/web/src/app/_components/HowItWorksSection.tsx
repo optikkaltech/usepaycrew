@@ -14,7 +14,7 @@ export function HowItWorksSection() {
   const steps = [
     {
       title: 'Fund Company Treasury',
-      desc: 'Deposit Naira via dedicated Korapay NUBAN virtual accounts or send USDT/USDC on Base or TRON with zero deposit fees.',
+      desc: 'Deposit funds via instant card payment or send USDT/USDC on Base or TRON with zero deposit fees.',
       active: true,
       icon: BuildingIcon,
     },

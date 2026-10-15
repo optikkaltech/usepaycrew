@@ -66,7 +66,7 @@ export class CompanyEntity {
   @Column({
     type: 'enum',
     enum: RampProviderType,
-    default: RampProviderType.MOCK,
+    default: RampProviderType.QUIDAX,
   })
   activeRampProvider: RampProviderType;
 
@@ -78,6 +78,15 @@ export class CompanyEntity {
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   taxId: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  state: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  lga: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  city: string | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   virtualAccountBank: string | null;

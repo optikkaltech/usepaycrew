@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -10,10 +10,8 @@ import { maskEmail } from '../../common/utils/masking.util';
 
 export interface GoogleAuthDto {
   credential?: string;
-  email?: string;
-  name?: string;
-  googleId?: string;
-  avatarUrl?: string;
+  code?: string;
+  redirectUri?: string;
   role?: UserRole;
   companyName?: string;
 }
@@ -29,29 +27,88 @@ export class GoogleAuthService {
     private readonly dataSource: DataSource,
   ) {}
 
+  getGoogleAuthUrl(redirectUri?: string): { url: string; clientId: string } {
+    const clientId = process.env.GOOGLE_CLIENT_ID || '';
+    const callback = redirectUri || process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/login';
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: callback,
+      response_type: 'code',
+      scope: 'openid email profile',
+      access_type: 'offline',
+      prompt: 'select_account',
+    });
+    return {
+      url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
+      clientId,
+    };
+  }
+
   async authenticateWithGoogle(dto: GoogleAuthDto): Promise<AuthResponse> {
-    let email = dto.email;
-    let name = dto.name;
-    let googleId = dto.googleId;
-    let avatarUrl = dto.avatarUrl;
+    let email: string | undefined;
+    let name: string | undefined;
+    let googleId: string | undefined;
+    let avatarUrl: string | undefined;
 
     if (dto.credential) {
-      try {
-        const parts = dto.credential.split('.');
-        if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-          email = payload.email || email;
-          name = payload.name || name;
-          googleId = payload.sub || googleId;
-          avatarUrl = payload.picture || avatarUrl;
-        }
-      } catch (err) {
-        // Fallback to provided fields
+      // 1. Verify Google ID Token via Google's tokeninfo API
+      const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${dto.credential}`);
+      if (!resp.ok) {
+        throw new UnauthorizedException('Invalid or expired Google credential');
       }
+      const data = await resp.json();
+      email = data.email;
+      name = data.name;
+      googleId = data.sub;
+      avatarUrl = data.picture;
+    } else if (dto.code) {
+      // 2. Exchange authorization code with Google OAuth servers
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const redirectUri = dto.redirectUri || process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/login';
+
+      if (!clientId || !clientSecret) {
+        throw new BadRequestException('Google OAuth is not configured on the server (missing GOOGLE_CLIENT_ID/SECRET)');
+      }
+
+      const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code: dto.code,
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+        }),
+      });
+
+      const tokenJson = await tokenResp.json();
+      if (!tokenResp.ok) {
+        console.error('Google token exchange error details:', tokenJson, 'using redirectUri:', redirectUri);
+        throw new UnauthorizedException(tokenJson.error_description || tokenJson.error || 'Failed to verify Google code');
+      }
+
+      // Fetch verified user profile with access token
+      const userResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokenJson.access_token}` },
+      });
+
+      if (!userResp.ok) {
+        throw new UnauthorizedException('Failed to retrieve user profile from Google');
+      }
+
+      const userData = await userResp.json();
+      email = userData.email;
+      name = userData.name;
+      googleId = userData.sub;
+      avatarUrl = userData.picture;
+    } else {
+      throw new BadRequestException('Google authentication requires a valid Google credential or authorization code');
     }
 
     if (!email) {
-      throw new BadRequestException('Google authentication failed: Email is required');
+      throw new BadRequestException('Google account must have a verified email address');
     }
 
     email = email.toLowerCase();
@@ -75,11 +132,11 @@ export class GoogleAuthService {
 
       if (role === UserRole.COMPANY_OWNER) {
         const company = manager.create(CompanyEntity, {
-          name: dto.companyName || `${name || 'My'}'s Organization`,
+          name: dto.companyName || `${name || email.split('@')[0]}'s Organization`,
           country: 'NG',
-          virtualAccountBank: 'Providus Bank (Korapay)',
-          virtualAccountNumber: `99${Math.floor(10000000 + Math.random() * 90000000)}`,
-          depositWalletAddress: `0x${crypto.randomBytes(20).toString('hex')}`,
+          virtualAccountBank: null,
+          virtualAccountNumber: null,
+          depositWalletAddress: null,
         });
         const savedCompany = await manager.save(company);
         companyId = savedCompany.id;
@@ -88,7 +145,7 @@ export class GoogleAuthService {
       const newUser = manager.create(UserEntity, {
         email,
         fullName: name || email.split('@')[0],
-        googleId: googleId || `g_${Date.now()}`,
+        googleId,
         avatarUrl: avatarUrl || null,
         passwordHash: `google_oauth_${crypto.randomBytes(16).toString('hex')}`,
         role,

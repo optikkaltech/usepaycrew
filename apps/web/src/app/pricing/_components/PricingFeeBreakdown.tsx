@@ -3,9 +3,9 @@ import { BanknoteIcon, CheckCircleIcon, ShieldCheckIcon } from '@/assets';
 export function PricingFeeBreakdown() {
   const feeItems = [
     {
-      operation: 'Treasury Deposit via Korapay NUBAN',
+      operation: 'Treasury Deposit via Card / Direct Bank Transfer',
       cost: '₦0 (Free)',
-      notes: 'Instant automatic crediting from any Nigerian corporate bank account',
+      notes: 'Instant automatic crediting to your company treasury balance',
     },
     {
       operation: 'Crypto Treasury Deposit (Base, TRON, ETH)',

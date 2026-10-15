@@ -140,10 +140,10 @@ export function PowerfulToolsSection() {
           {/* Card 4: Dedicated Naira Treasury with Radial Connections */}
           <div className="rounded-2xl border border-black/[0.08] bg-white p-6 shadow-sm hover:shadow-md dark:border-white/[0.08] dark:bg-[#0c0d10] dark:shadow-none hover:border-black/[0.15] dark:hover:border-white/[0.16] transition-all flex flex-col justify-between">
             <div>
-              <h3 className="text-label-lg font-semibold text-gray-900 dark:text-white">Dedicated Naira Virtual Accounts</h3>
+              <h3 className="text-label-lg font-semibold text-gray-900 dark:text-white">Instant Treasury &amp; Card Funding</h3>
               <p className="mt-2 text-body-xs text-gray-600 dark:text-[#8a8f98] leading-relaxed">
-                Fund payroll directly from your Nigerian corporate bank accounts via permanent Korapay NUBAN
-                virtual accounts with automated zero-fee treasury balance updates.
+                Fund payroll directly from your corporate cards or crypto stablecoins
+                with automated zero-fee treasury balance updates.
               </p>
             </div>
             {/* Radial hub diagram */}

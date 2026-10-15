@@ -6,7 +6,7 @@ import { BuildingIcon, CheckCircleIcon, ShieldAlertIcon, AppStrings } from '@/as
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { http } from '@/services';
+import { PayoutService } from '@/services';
 import { useToast } from '@/hooks';
 import { normalizeError } from '@/utils';
 
@@ -28,23 +28,43 @@ interface BankSectionProps {
   onSuccess: () => void;
 }
 
-export function BankSection({ workerId, workerName, payoutMethods, onSuccess }: BankSectionProps) {
+import { useQuery, useMutation } from '@tanstack/react-query';
 
+export function BankSection({ workerId, workerName, payoutMethods, onSuccess }: BankSectionProps) {
   const toast = useToast();
-  const [banks, setBanks] = useState(defaultBanks);
   const [bankCode, setBankCode] = useState('058');
   const [accountNumber, setAccountNumber] = useState('');
   const [resolvedName, setResolvedName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  // Fetch live Korapay bank list on mount
-  useEffect(() => {
-    http.get('/payout-methods/banks')
-      .then((res: any) => {
-        if (Array.isArray(res) && res.length > 0) setBanks(res);
-      })
-      .catch(() => {});
-  }, []);
+  // Fetch live Korapay bank list via TanStack Query & PayoutService
+  const { data: banks = defaultBanks } = useQuery({
+    queryKey: ['payout-banks'],
+    queryFn: async () => {
+      const res = await PayoutService.getBanks();
+      return Array.isArray(res) && res.length > 0 ? res : defaultBanks;
+    },
+    staleTime: 60 * 60 * 1000,
+  });
+
+  const saveBankMutation = useMutation({
+    mutationFn: async () => {
+      const selectedBank = banks.find((b: any) => b.code === bankCode);
+      return PayoutService.linkBank(workerId, {
+        accountNumber,
+        bankCode,
+        bankName: selectedBank?.name || 'Commercial Bank',
+      });
+    },
+    onSuccess: () => {
+      toast.success('Bank account linked successfully');
+      setAccountNumber('');
+      setResolvedName(null);
+      onSuccess();
+    },
+    onError: (err) => {
+      toast.error(normalizeError(err).message);
+    },
+  });
 
   const defaultMethod = payoutMethods.find((m) => m.isDefault);
 
@@ -52,7 +72,7 @@ export function BankSection({ workerId, workerName, payoutMethods, onSuccess }: 
     setAccountNumber(acct);
     if (acct.length === 10) {
       try {
-        const res = await http.get(`/payout-methods/lookup-bank?accountNumber=${acct}&bankCode=${bankCode}`);
+        const res = await PayoutService.lookupBank(acct, bankCode);
         setResolvedName(res.accountName);
       } catch {
         setResolvedName(null);
@@ -62,27 +82,12 @@ export function BankSection({ workerId, workerName, payoutMethods, onSuccess }: 
     }
   };
 
-
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!resolvedName) return;
-    setLoading(true);
-    try {
-      const selectedBank = banks.find((b) => b.code === bankCode);
-      await http.post(`/payout-methods/${workerId}/bank`, {
-        accountNumber,
-        bankCode,
-        bankName: selectedBank?.name || 'Commercial Bank',
-      });
-      toast.success('Bank account linked successfully');
-      setAccountNumber('');
-      setResolvedName(null);
-      onSuccess();
-    } catch (err) {
-      toast.error(normalizeError(err).message);
-    } finally {
-      setLoading(false);
-    }
+    saveBankMutation.mutate();
   };
+
+  const loading = saveBankMutation.isPending;
 
   return (
     <Card variant="elevated" className="flex flex-col gap-3">

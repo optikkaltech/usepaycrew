@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleAuthService, GoogleAuthDto } from './google-auth.service';
 import { RegisterDto, LoginDto } from './auth.types';
@@ -11,6 +11,12 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly googleAuthService: GoogleAuthService,
   ) {}
+
+  @Get('google/url')
+  getGoogleAuthUrl(@Query('redirectUri') redirectUri?: string) {
+    const data = this.googleAuthService.getGoogleAuthUrl(redirectUri);
+    return { success: true, data };
+  }
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {

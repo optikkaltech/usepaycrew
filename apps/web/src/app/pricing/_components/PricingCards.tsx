@@ -20,7 +20,7 @@ export function PricingCards({ annual }: PricingCardsProps) {
       ctaHref: '/register?plan=starter',
       features: [
         'Up to 10 active contractor seats',
-        'Dedicated Korapay Naira NUBAN',
+        'Instant Card & Crypto Funding',
         'USDC & USDT wallet deposits (Base/TRON)',
         'Unlimited monthly payroll runs',
         'Instant contractor bank cashouts',

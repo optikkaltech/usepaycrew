@@ -1,8 +1,10 @@
 'use client';
 
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/store';
-import { TokenService, http } from '@/services';
+import { TokenService, AuthService } from '@/services';
 import { useRouter } from 'next/navigation';
+import { useToast } from './useToast';
 
 export function useAuth() {
   const { user, isAuthenticated, setUser, logout: storeLogout } = useAuthStore();
@@ -13,22 +15,58 @@ export function useAuth() {
     router.push('/login');
   };
 
-  const fetchProfile = async () => {
-    if (!TokenService.hasTokens()) return null;
-    try {
-      const data = await http.get('/auth/me');
+  const profileQuery = useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: async () => {
+      const data = await AuthService.getMe();
       setUser(data);
       return data;
-    } catch {
-      logout();
-      return null;
-    }
-  };
+    },
+    enabled: typeof window !== 'undefined' && TokenService.hasTokens(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
   return {
-    user,
+    user: user || profileQuery.data,
     isAuthenticated,
     logout,
-    fetchProfile,
+    fetchProfile: profileQuery.refetch,
+    isLoading: profileQuery.isLoading,
   };
 }
+
+export function useLogin() {
+  const router = useRouter();
+  const { setUser } = useAuthStore();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: AuthService.login,
+    onSuccess: (data) => {
+      TokenService.setAccessToken(data.accessToken);
+      TokenService.setRefreshToken(data.refreshToken);
+      setUser(data.user);
+      toast.success('Signed in successfully');
+      router.push('/dashboard');
+    },
+  });
+}
+
+export function useRegister() {
+  const router = useRouter();
+  const { setUser } = useAuthStore();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: AuthService.register,
+    onSuccess: (data) => {
+      TokenService.setAccessToken(data.accessToken);
+      TokenService.setRefreshToken(data.refreshToken);
+      setUser(data.user);
+      toast.success('Account created successfully');
+      router.push('/dashboard');
+    },
+  });
+}
+

@@ -40,9 +40,9 @@ export class AuthService {
         name: dto.companyName,
         registrationNumber: dto.registrationNumber || null,
         country: dto.country || 'NG',
-        virtualAccountBank: 'Wema Bank / Providus',
-        virtualAccountNumber: `012${Math.floor(1000000 + Math.random() * 9000000)}`,
-        depositWalletAddress: `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+        virtualAccountBank: null,
+        virtualAccountNumber: null,
+        depositWalletAddress: null,
       });
       const savedCompany = await manager.save(company);
 

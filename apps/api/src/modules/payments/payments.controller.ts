@@ -65,7 +65,10 @@ export class PaymentsController {
     @Headers('x-quidax-signature') signature: string,
     @Body() payload: WebhookEventPayload,
   ) {
-    const secret = process.env.QUIDAX_WEBHOOK_SECRET || 'test_webhook_secret_key_2026';
+    const secret =
+      process.env.QUIDAX_RAMP_WEBHOOK_SECRET ||
+      process.env.QUIDAX_WEBHOOK_SECRET ||
+      'test_webhook_secret_key_2026';
     const computedSignature = crypto
       .createHmac('sha256', secret)
       .update(JSON.stringify(payload))

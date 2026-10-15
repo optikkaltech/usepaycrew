@@ -13,7 +13,7 @@ export function AuthSocialButtons({ onGoogleClick, isSubmitting }: AuthSocialBut
         type="button"
         disabled={isSubmitting}
         onClick={onGoogleClick}
-        className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#374151] py-3 text-label-sm font-medium transition-all shadow-xs disabled:opacity-60 cursor-pointer"
+        className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-border bg-card hover:bg-secondary text-foreground py-3 text-label-sm font-medium transition-all shadow-xs disabled:opacity-60 cursor-pointer"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24">
           <path

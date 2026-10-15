@@ -47,6 +47,9 @@ export class OnboardingService {
     if (dto.taxId) company.taxId = dto.taxId;
     if (dto.industry) company.industry = dto.industry;
     if (dto.country) company.country = dto.country;
+    if (dto.state) company.state = dto.state;
+    if (dto.lga) company.lga = dto.lga;
+    if (dto.city) company.city = dto.city;
     company.onboardingStep = CompanyOnboardingStep.COMPLIANCE;
 
     return this.companyRepo.save(company);
@@ -70,11 +73,11 @@ export class OnboardingService {
     return this.companyRepo.save(company);
   }
 
-  async completeCompanyBilling(companyId: string, plan: string = 'STARTER'): Promise<CompanyEntity> {
+  async completeCompanyBilling(companyId: string, plan: string = 'FREE'): Promise<CompanyEntity> {
     const company = await this.companyRepo.findOne({ where: { id: companyId } });
     if (!company) throw new NotFoundException('Company not found');
 
-    company.subscriptionPlan = (plan as SubscriptionPlan) || SubscriptionPlan.STARTER;
+    company.subscriptionPlan = (plan as SubscriptionPlan) || SubscriptionPlan.FREE;
     company.subscriptionStatus = SubscriptionStatus.ACTIVE;
     company.onboardingStep = CompanyOnboardingStep.COMPLETED;
 

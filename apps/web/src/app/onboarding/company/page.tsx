@@ -1,87 +1,72 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AppStrings, BuildingIcon } from '@/assets';
-import { http } from '@/services';
-import { useToast } from '@/hooks';
-import { normalizeError } from '@/utils';
+import { AppStrings, MoonIcon, SunIcon } from '@/assets';
+import {
+  useTheme,
+  useCompanyOnboardingStatus,
+  useSaveCompanyProfile,
+  useSaveCompanyCompliance,
+  useCompleteCompanyBilling,
+} from '@/hooks';
 import { ProfileStep } from './_components/ProfileStep';
 import { ComplianceStep } from './_components/ComplianceStep';
 import { BillingStep } from './_components/BillingStep';
 import { CompleteStep } from './_components/CompleteStep';
-import {
-  CompanyProfileFormValues,
-  CompanyComplianceFormValues,
-} from './_components/company-onboarding.types';
+import { OnboardingStepper } from './_components/OnboardingStepper';
 
 export default function CompanyOnboardingPage() {
   const router = useRouter();
-  const toast = useToast();
-  const queryClient = useQueryClient();
+  const { isDark, toggleTheme, mounted } = useTheme();
   const [activeStep, setActiveStep] = useState<'PROFILE' | 'COMPLIANCE' | 'BILLING' | 'COMPLETED'>('PROFILE');
 
-  const { data: statusData, isLoading } = useQuery({
-    queryKey: ['companyOnboardingStatus'],
-    queryFn: async () => {
-      const res = await http.get('/onboarding/company');
-      if (res.currentStep) setActiveStep(res.currentStep);
-      return res;
-    },
-  });
-
-  const profileMutation = useMutation({
-    mutationFn: (values: CompanyProfileFormValues) => http.post('/onboarding/company/profile', values),
-    onSuccess: () => {
-      toast.success('Organization profile saved');
-      setActiveStep('COMPLIANCE');
-      queryClient.invalidateQueries({ queryKey: ['companyOnboardingStatus'] });
-    },
-    onError: (err) => toast.error(normalizeError(err).message),
-  });
-
-  const complianceMutation = useMutation({
-    mutationFn: (values: CompanyComplianceFormValues) => http.post('/onboarding/company/compliance', values),
-    onSuccess: () => {
-      toast.success('Director KYB verified successfully');
-      setActiveStep('BILLING');
-      queryClient.invalidateQueries({ queryKey: ['companyOnboardingStatus'] });
-    },
-    onError: (err) => toast.error(normalizeError(err).message),
-  });
-
-  const billingMutation = useMutation({
-    mutationFn: ({ plan, method }: { plan: string; method: string }) =>
-      http.post('/onboarding/company/complete', { plan, method }),
-    onSuccess: () => {
-      toast.success('Subscription activated! Company setup completed.');
-      setActiveStep('COMPLETED');
-      queryClient.invalidateQueries({ queryKey: ['companyOnboardingStatus'] });
-    },
-    onError: (err) => toast.error(normalizeError(err).message),
-  });
+  const { data: statusData, isLoading } = useCompanyOnboardingStatus((step) => setActiveStep(step));
+  const profileMutation = useSaveCompanyProfile(() => setActiveStep('COMPLIANCE'));
+  const complianceMutation = useSaveCompanyCompliance(() => setActiveStep('BILLING'));
+  const billingMutation = useCompleteCompanyBilling(() => setActiveStep('COMPLETED'));
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center p-4 bg-background">
         <p className="text-body-md text-muted-foreground">{AppStrings.common.loading}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 bg-secondary">
-      <div className="w-full max-w-xl">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-brand">
-            <BuildingIcon className="h-6 w-6" />
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-[#fafbfc] text-[#0c1f1a] dark:bg-[#08090b] dark:text-[#f4f5f7] transition-colors duration-200 overflow-x-hidden">
+      {/* Background ambient radial glow */}
+      <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[380px] w-[550px] rounded-full bg-brand-emerald/[0.08] dark:bg-brand-emerald/[0.12] blur-[120px]" />
+
+      {/* Top Header with Brand Emblem & Theme Toggle */}
+      <header className="w-full max-w-xl flex items-center justify-between mb-6 z-10">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-emerald text-black font-black text-caption shadow-[0_0_12px_rgba(6,214,160,0.4)]">
+            P
           </div>
-          <h1 className="text-display-sm text-foreground">{AppStrings.onboarding.title}</h1>
-          <p className="mt-1 text-body-xs text-muted-foreground">
-            Complete compliance to unlock Korapay settlements and multi-chain stablecoin payroll
-          </p>
-        </div>
+          <span className="text-label-md font-bold text-foreground tracking-tight">
+            {AppStrings.appName}
+          </span>
+        </Link>
+
+        {mounted && (
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-black/[0.08] dark:border-white/[0.08] bg-card text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Toggle theme"
+          >
+            {isDark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+          </button>
+        )}
+      </header>
+
+      {/* Main Form Container */}
+      <div className="w-full max-w-xl relative z-10">
+        {/* Stepper Progress */}
+        <OnboardingStepper currentStep={activeStep} />
 
         {activeStep === 'PROFILE' && (
           <ProfileStep
@@ -93,6 +78,7 @@ export default function CompanyOnboardingPage() {
 
         {activeStep === 'COMPLIANCE' && (
           <ComplianceStep
+            country={statusData?.company?.country}
             onSubmit={async (values) => complianceMutation.mutate(values)}
             isLoading={complianceMutation.isPending}
           />

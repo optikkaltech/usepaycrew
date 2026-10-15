@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { EyeIcon, EyeOffIcon } from '@/assets';
-import { http, TokenService } from '@/services';
-import { useAuthStore } from '@/store';
-import { useToast } from '@/hooks';
+import { useToast, useGoogleAuth, useLogin } from '@/hooks';
 import { normalizeError } from '@/utils';
 import { AuthShell } from '../_components/AuthShell';
 import { AuthSocialButtons } from '../_components/AuthSocialButtons';
@@ -22,165 +20,147 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [requires2fa, setRequires2fa] = useState(false);
+  const { initiateGoogleAuth, isGoogleLoading } = useGoogleAuth('/login');
+  const loginMutation = useLogin();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
-    try {
-      const data = await http.post('/auth/login', values);
-      TokenService.setAccessToken(data.accessToken);
-      TokenService.setRefreshToken(data.refreshToken);
-      setUser(data.user);
-      toast.success('Signed in successfully');
-      router.push('/dashboard');
-    } catch (err) {
-      const norm = normalizeError(err);
-      if (norm.message.includes('Two-factor') || norm.message.includes('2FA')) {
-        setRequires2fa(true);
-      }
-      toast.error(norm.message);
-    }
-  };
+  const isSubmitting = loginMutation.isPending;
 
-  const onGoogleSignIn = async () => {
-    try {
-      const data = await http.post('/auth/google', {
-        email: 'founder@paycrew-corp.io',
-        name: 'Google Workspace User',
-        googleId: `g_oauth_${Date.now()}`,
-        role: 'COMPANY_OWNER',
-      });
-      TokenService.setAccessToken(data.accessToken);
-      TokenService.setRefreshToken(data.refreshToken);
-      setUser(data.user);
-      toast.success('Signed in with Google');
-      router.push('/dashboard');
-    } catch (err) {
-      toast.error(normalizeError(err).message);
-    }
+  const onSubmit = (values: LoginFormValues) => {
+    loginMutation.mutate(values, {
+      onError: (err) => {
+        const norm = normalizeError(err);
+        if (norm.message.includes('Two-factor') || norm.message.includes('2FA')) {
+          setRequires2fa(true);
+        }
+        toast.error(norm.message);
+      },
+    });
   };
 
   return (
     <AuthShell showcaseHeadline="One Click Away from Effortless Stablecoin Payroll">
-      {/* Title & Subtitle */}
       <div className="mb-6">
-        <h1 className="text-display-xs sm:text-display-sm font-heading font-semibold text-[#111827]">
+        <h1 className="text-display-xs sm:text-display-sm font-heading font-semibold text-foreground">
           Welcome Back
         </h1>
-        <p className="mt-1.5 text-body-xs text-[#6B7280]">
+        <p className="mt-1.5 text-body-xs text-muted-foreground">
           Enter your credentials to access your PayCrew dashboard.
         </p>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Email */}
         <div>
-          <label className="block text-label-xs font-semibold text-[#111827] mb-1.5">
-            Email
+          <label className="block text-label-sm font-medium text-foreground mb-1">
+            Work Email
           </label>
           <input
-            type="email"
-            placeholder="Enter your email"
-            className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-body-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:ring-1 focus:ring-[#111827] outline-none transition-all"
             {...register('email')}
+            type="email"
+            placeholder="alex@acme.com"
+            disabled={isSubmitting || isGoogleLoading}
+            className="w-full min-h-[44px] px-3.5 text-body-sm bg-card border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
           />
           {errors.email && (
-            <p className="mt-1 text-caption text-red-500">{errors.email.message}</p>
+            <p className="mt-1 text-caption text-destructive">{errors.email.message}</p>
           )}
         </div>
 
-        {/* Password */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-label-xs font-semibold text-[#111827]">
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-label-sm font-medium text-foreground">
               Password
             </label>
             <Link
-              href="#"
-              className="text-caption text-gray-500 hover:text-black transition-colors"
+              href="/forgot-password"
+              className="text-caption font-medium text-muted-foreground hover:text-foreground"
             >
               Forgot password?
             </Link>
           </div>
           <div className="relative">
             <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="••••••••••••"
-              className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 pr-11 text-body-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:ring-1 focus:ring-[#111827] outline-none transition-all"
               {...register('password')}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              disabled={isSubmitting || isGoogleLoading}
+              className="w-full min-h-[44px] px-3.5 pr-10 text-body-sm bg-card border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none cursor-pointer"
             >
-              {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+              {showPassword ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
             </button>
           </div>
           {errors.password && (
-            <p className="mt-1 text-caption text-red-500">{errors.password.message}</p>
+            <p className="mt-1 text-caption text-destructive">{errors.password.message}</p>
           )}
         </div>
 
-        {/* 2FA Token */}
         {requires2fa && (
           <div>
-            <label className="block text-label-xs font-semibold text-[#111827] mb-1.5">
+            <label className="block text-label-sm font-medium text-foreground mb-1">
               Two-Factor Authentication Code
             </label>
             <input
-              type="text"
-              placeholder="123456"
-              className="w-full rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-body-sm text-[#111827] placeholder:text-[#9CA3AF] focus:border-[#111827] focus:ring-1 focus:ring-[#111827] outline-none transition-all font-mono"
               {...register('twoFactorToken')}
+              type="text"
+              placeholder="6-digit authenticator code"
+              maxLength={6}
+              disabled={isSubmitting || isGoogleLoading}
+              className="w-full min-h-[44px] px-3.5 text-body-sm bg-card border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-mono tracking-widest text-center"
             />
           </div>
         )}
 
-        {/* Submit Button */}
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-xl bg-[#0F1115] hover:bg-[#1E2025] text-white py-3 text-label-sm font-semibold transition-all shadow-md disabled:opacity-60 cursor-pointer"
+          disabled={isSubmitting || isGoogleLoading}
+          className="w-full min-h-[44px] mt-2 bg-primary text-primary-foreground text-label-sm font-semibold rounded-lg hover:opacity-90 transition shadow-brand disabled:opacity-50 flex items-center justify-center cursor-pointer"
         >
           {isSubmitting ? 'Signing in...' : 'Sign in'}
         </button>
       </form>
 
-      {/* Or Divider */}
       <div className="relative my-4 text-center">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-[#E5E7EB]" />
+          <span className="w-full border-t border-border" />
         </div>
-        <span className="relative bg-white px-3 text-[11px] font-medium text-gray-400 uppercase">
+        <span className="relative bg-card px-3 text-[11px] font-medium text-muted-foreground uppercase">
           or
         </span>
       </div>
 
-      {/* Social OAuth Buttons */}
-      <AuthSocialButtons onGoogleClick={onGoogleSignIn} isSubmitting={isSubmitting} />
+      <AuthSocialButtons onGoogleClick={initiateGoogleAuth} isSubmitting={isSubmitting || isGoogleLoading} />
 
-      {/* Switch to Register */}
-      <div className="mt-6 text-center text-caption text-gray-500">
+      <div className="mt-6 text-center text-caption text-muted-foreground">
         Don&apos;t have an account?{' '}
-        <Link href="/register" prefetch={true} className="font-bold text-gray-900 hover:underline">
+        <Link href="/register" prefetch={true} className="font-bold text-foreground hover:underline">
           Sign Up
         </Link>
       </div>
     </AuthShell>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -32,15 +32,15 @@ export default function SettingsPage() {
   });
 
   const payMutation = useMutation({
-    mutationFn: (method: 'KORAPAY' | 'CRYPTO') =>
+    mutationFn: (method: 'CARD' | 'CRYPTO') =>
       http.post('/subscriptions/initiate', {
-        currency: method === 'KORAPAY' ? 'NGN' : 'USDT',
+        currency: method === 'CARD' ? 'USD' : 'USDT',
         paymentMethod: method,
       }),
     onSuccess: (data: any) => {
       toast.success(
-        data.paymentMethod === 'KORAPAY'
-          ? `Pay ₦${data.amount?.toLocaleString()} to ${data.virtualAccount?.bankName} (${data.virtualAccount?.accountNumber})`
+        data.paymentMethod === 'CARD'
+          ? 'Card payment processed successfully'
           : `Deposit $${data.amount} USDT to ${data.depositAddress}`,
       );
     },
@@ -63,7 +63,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-display-md text-foreground font-extrabold">{AppStrings.subscriptions.title}</h1>
         <p className="mt-1 text-body-sm text-muted-foreground">
-          Manage company subscription, Korapay settlement, and crypto providers
+          Manage company subscription, payouts, and crypto providers
         </p>
       </div>
 
@@ -110,11 +110,11 @@ export default function SettingsPage() {
 
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <Button
-            onClick={() => payMutation.mutate('KORAPAY')}
+            onClick={() => payMutation.mutate('CARD')}
             isLoading={payMutation.isPending}
             className="flex-1 min-h-[44px]"
           >
-            {AppStrings.subscriptions.payWithKorapay}
+            {AppStrings.subscriptions.payWithCard}
           </Button>
           <Button
             variant="outline"

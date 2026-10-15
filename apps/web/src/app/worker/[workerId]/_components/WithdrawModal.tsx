@@ -5,7 +5,7 @@ import { AppStrings, XIcon, ShieldCheckIcon, CheckCircleIcon } from '@/assets';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { http } from '@/services';
+import { PayoutService } from '@/services';
 import { useToast } from '@/hooks';
 import { formatCurrency, normalizeError } from '@/utils';
 import { Currency } from '@paycrew/shared-types';
@@ -18,22 +18,45 @@ interface WithdrawModalProps {
   defaultMethod?: any;
 }
 
+import { useMutation } from '@tanstack/react-query';
+
 export function WithdrawModal({ isOpen, onClose, onSuccess, workerId, defaultMethod }: WithdrawModalProps) {
   const toast = useToast();
   const [amount, setAmount] = useState('');
   const [pin, setPin] = useState('');
   const [estimate, setEstimate] = useState<any>(null);
   const [receipt, setReceipt] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+
+  const withdrawMutation = useMutation({
+    mutationFn: async () => {
+      return PayoutService.executeWithdrawal({
+        workerId,
+        amount,
+        currency: Currency.USD,
+        payoutMethodId: defaultMethod?.id,
+        otpOrPin: pin,
+      });
+    },
+    onSuccess: (res) => {
+      setReceipt(res);
+      toast.success('Withdrawal dispatched successfully');
+      onSuccess();
+    },
+    onError: (err) => {
+      toast.error(normalizeError(err).message);
+    },
+  });
 
   if (!isOpen) return null;
+
+  const loading = withdrawMutation.isPending;
 
   const handleAmountChange = async (val: string) => {
     setAmount(val);
     const num = parseFloat(val);
     if (!isNaN(num) && num > 0) {
       try {
-        const est = await http.get(`/withdrawals/estimate?amount=${val}&currency=USD`);
+        const est = await PayoutService.getWithdrawalEstimate(val, 'USD');
         setEstimate(est);
       } catch {
         setEstimate(null);
@@ -43,28 +66,12 @@ export function WithdrawModal({ isOpen, onClose, onSuccess, workerId, defaultMet
     }
   };
 
-  const handleExecute = async () => {
+  const handleExecute = () => {
     if (!defaultMethod) {
       toast.error('Please add a bank account first');
       return;
     }
-    setLoading(true);
-    try {
-      const res = await http.post('/withdrawals/execute', {
-        workerId,
-        amount,
-        currency: Currency.USD,
-        payoutMethodId: defaultMethod.id,
-        otpOrPin: pin,
-      });
-      setReceipt(res);
-      toast.success('Withdrawal dispatched successfully');
-      onSuccess();
-    } catch (err) {
-      toast.error(normalizeError(err).message);
-    } finally {
-      setLoading(false);
-    }
+    withdrawMutation.mutate();
   };
 
   return (

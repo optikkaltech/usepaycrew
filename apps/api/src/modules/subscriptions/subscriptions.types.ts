@@ -13,8 +13,10 @@ export interface SubscriptionBillingSummary {
 }
 
 export interface InitiateSubscriptionPaymentDto {
-  currency: 'NGN' | 'USDT' | 'USDC';
-  paymentMethod: 'KORAPAY' | 'CRYPTO';
+  currency?: 'NGN' | 'USDT' | 'USDC' | 'USD';
+  paymentMethod: 'CARD' | 'CRYPTO' | 'FREE' | 'KORAPAY';
+  network?: string;
+  plan?: string;
 }
 
 export interface SubscriptionPaymentResult {

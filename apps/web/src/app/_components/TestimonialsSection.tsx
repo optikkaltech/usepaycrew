@@ -6,7 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon, UserIcon } from '@/assets';
 const testimonials = [
   {
     quote:
-      'Before PayCrew, paying our 18 remote engineers across Lagos, Nairobi, and Kigali took 3 bank days and cost a fortune in wire fees. Now we fund our treasury in Naira via Korapay and everyone gets paid in USDC within 20 seconds.',
+      'Before PayCrew, paying our 18 remote engineers across Lagos, Nairobi, and Kigali took 3 bank days and cost a fortune in wire fees. Now we fund our treasury in Naira and everyone gets paid in USDC within 20 seconds.',
     name: 'Tunde Balogun',
     role: 'CTO, Apex Logistics',
     initials: 'TB',

@@ -59,6 +59,9 @@ importers:
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
+      country-state-city:
+        specifier: ^3.2.1
+        version: 3.2.1
       express:
         specifier: ^5.0.1
         version: 5.3.0(supports-color@8.1.1)
@@ -68,6 +71,9 @@ importers:
       ioredis:
         specifier: ^5.5.0
         version: 5.11.1(supports-color@8.1.1)
+      nigerian-states-and-lgas:
+        specifier: ^1.0.8
+        version: 1.0.8
       otplib:
         specifier: ^12.0.1
         version: 12.0.1
@@ -1914,6 +1920,9 @@ packages:
       typescript:
         optional: true
 
+  country-state-city@3.2.1:
+    resolution: {integrity: sha512-kxbanqMc6izjhc/EHkGPCTabSPZ2G6eG4/97akAYHJUN4stzzFEvQPZoF8oXDQ+10gM/O/yUmISCR1ZVxyb6EA==}
+
   create-jest@29.7.0:
     resolution: {integrity: sha512-Adz2bdH0Vq3F53KEMJOoftQFutWCukm6J24wbPWRO4k1kMY7gS7ds/uoJkNuV8wDCtWWnuwGcJwpWcih+zEW1Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -2883,6 +2892,9 @@ packages:
         optional: true
       sass:
         optional: true
+
+  nigerian-states-and-lgas@1.0.8:
+    resolution: {integrity: sha512-zfl5y+fXAvzfrGqKTDUx+U1/xus5MH1zR3UZTRbkNO5VGvanKgFcFRJ3ogQbYJytXNZn9t0PjLSk4D2BCvHDuw==}
 
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
@@ -5849,6 +5861,8 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+  country-state-city@3.2.1: {}
+
   create-jest@29.7.0(@types/node@22.20.5)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@22.20.5)(typescript@5.9.3)):
     dependencies:
       '@jest/types': 29.6.3
@@ -7019,6 +7033,8 @@ snapshots:
       - '@babel/core'
       - '@types/node'
       - babel-plugin-macros
+
+  nigerian-states-and-lgas@1.0.8: {}
 
   node-abort-controller@3.1.1: {}
 

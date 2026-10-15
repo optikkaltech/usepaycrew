@@ -28,7 +28,13 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().default('GOCSPX-test-google-client-secret-2026'),
   GOOGLE_CALLBACK_URL: z.string().default('http://localhost:4000/api/auth/google/callback'),
 
-  // Quidax (Crypto / OTC Liquidity / NGN Off-Ramp)
+  // Quidax Ramp (Custodial On/Off-Ramp & Widget)
+  QUIDAX_RAMP_BASE_URL: z.string().default('https://ramp-be.quidax.io'),
+  QUIDAX_RAMP_PRIVATE_KEY: z.string().default('sk_test_quidax_ramp_key_2026'),
+  QUIDAX_RAMP_PUBLIC_KEY: z.string().default('pub_test_quidax_ramp_key_2026'),
+  QUIDAX_RAMP_WEBHOOK_SECRET: z.string().default('test_quidax_ramp_webhook_secret_2026'),
+
+  // Quidax Exchange (Market Tickers & OTC Rates)
   QUIDAX_BASE_URL: z.string().default('https://app.quidax.com/api/v1'),
   QUIDAX_SECRET_KEY: z.string().default('sec_test_quidax_key_2026'),
   QUIDAX_PUBLIC_KEY: z.string().default('pub_test_quidax_key_2026'),

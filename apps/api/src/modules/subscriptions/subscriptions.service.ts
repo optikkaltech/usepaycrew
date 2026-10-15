@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CompanyEntity, WorkerEntity } from '../../database/entities';
-import { WorkerStatus, SubscriptionStatus } from '@paycrew/shared-types';
+import { WorkerStatus, SubscriptionStatus, SubscriptionPlan, Currency } from '@paycrew/shared-types';
 
 import { BankingProviderFactory } from '../../providers/banking/banking.factory';
 import { RampProviderFactory } from '../../providers/ramp/ramp.factory';
@@ -66,49 +66,54 @@ export class SubscriptionsService {
     const summary = await this.getBillingSummary(companyId);
     const ref = `sub_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
-    if (dto.paymentMethod === 'KORAPAY' || dto.currency === 'NGN') {
-      const banking = this.bankingFactory.getProvider();
-      const va = banking.createVirtualAccount
-        ? await banking.createVirtualAccount(company.name, ref)
-        : null;
-
+    if (dto.paymentMethod === 'CARD') {
       return {
         reference: ref,
-        amount: summary.totalMonthlyNgn,
-        currency: 'NGN',
-        paymentMethod: 'KORAPAY',
-        virtualAccount: va
-          ? {
-              accountNumber: va.accountNumber,
-              bankName: va.bankName,
-              accountName: va.accountName,
-            }
-          : {
-              accountNumber: company.virtualAccountNumber || '0129948192',
-              bankName: company.virtualAccountBank || 'Providus Bank (Korapay)',
-              accountName: `PAYCREW / ${company.name.toUpperCase()}`,
-            },
+        amount: dto.currency === 'NGN' ? summary.totalMonthlyNgn : summary.totalMonthlyUsd,
+        currency: dto.currency || 'USD',
+        paymentMethod: 'CARD',
       };
     }
 
-    // Crypto subscription payment via Quidax / YellowCard
+    if (dto.paymentMethod === 'FREE') {
+      company.subscriptionPlan = SubscriptionPlan.FREE;
+      company.subscriptionStatus = SubscriptionStatus.ACTIVE;
+      await this.companyRepo.save(company);
+      return {
+        reference: ref,
+        amount: 0,
+        currency: 'USD',
+        paymentMethod: 'FREE',
+      };
+    }
+
+    // Crypto subscription payment via Quidax (Dedicated USDT deposit)
     const ramp = this.rampFactory.getProvider(company.activeRampProvider);
-    const deposit = await ramp.generateDepositAddress(dto.currency as any, 'polygon');
+    const network = dto.network || 'TRON';
+    const deposit = await ramp.generateDepositAddress(Currency.USDT, network);
+
+    if (!company.depositWalletAddress && deposit.address) {
+      company.depositWalletAddress = deposit.address;
+      await this.companyRepo.save(company);
+    }
 
     return {
       reference: ref,
       amount: summary.totalMonthlyUsd,
-      currency: dto.currency,
+      currency: 'USDT',
       paymentMethod: 'CRYPTO',
       depositAddress: deposit.address,
       network: deposit.network,
     };
   }
 
-  async confirmPayment(companyId: string, reference: string): Promise<CompanyEntity> {
+  async confirmPayment(companyId: string, reference: string, plan?: string): Promise<CompanyEntity> {
     const company = await this.companyRepo.findOne({ where: { id: companyId } });
     if (!company) throw new NotFoundException('Company not found');
 
+    if (plan) {
+      company.subscriptionPlan = (plan as SubscriptionPlan) || company.subscriptionPlan;
+    }
     company.subscriptionStatus = SubscriptionStatus.ACTIVE;
     return this.companyRepo.save(company);
   }

@@ -1,6 +1,6 @@
 export function PartnerLogos() {
   const partners = [
-    { name: 'Korapay', badge: '🏦 Korapay Rails' },
+    { name: 'Direct Settlement', badge: '🏦 Instant Settlement' },
     { name: 'Quidax', badge: '⚡ Quidax OTC' },
     { name: 'Base', badge: '🔵 Base L2' },
     { name: 'TRON', badge: '🔴 TRON USDT' },

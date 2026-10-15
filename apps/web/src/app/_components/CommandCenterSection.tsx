@@ -26,7 +26,7 @@ export function CommandCenterSection() {
 
         {/* Subtitle */}
         <p className="mt-4 text-body-sm sm:text-body-md text-gray-600 dark:text-[#8a8f98] max-w-xl leading-relaxed">
-          Disburse batch payroll, verify contractor BVN/NIN, fund corporate treasury via Korapay,
+          Disburse batch payroll, verify contractor BVN/NIN, fund corporate treasury,
           and approve high-value dispatches without leaving your keyboard.
         </p>
 
@@ -94,7 +94,7 @@ export function CommandCenterSection() {
                   <div className="flex items-center justify-between rounded-lg px-3 py-2 text-label-sm text-gray-600 dark:text-[#8a8f98] cursor-pointer hover:bg-black/[0.03] hover:text-black dark:hover:bg-white/[0.04] dark:hover:text-white">
                     <div className="flex items-center gap-2.5">
                       <BuildingIcon className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
-                      <span>Fund Treasury (Korapay NUBAN)</span>
+                      <span>Fund Treasury (Instant / Crypto)</span>
                     </div>
                     <kbd className="text-[10px] text-gray-400 dark:text-[#6b7280]">⌘ F</kbd>
                   </div>

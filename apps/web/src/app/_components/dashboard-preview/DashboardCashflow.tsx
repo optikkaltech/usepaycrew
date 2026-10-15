@@ -17,7 +17,7 @@ export function DashboardCashflow() {
           <span className="text-label-sm font-semibold text-gray-900 dark:text-white">Treasury &amp; Payroll Flow</span>
           <InfoIcon className="h-3 w-3 text-gray-400 dark:text-[#6b7280]" />
           <span className="rounded-full border border-emerald-500/20 bg-emerald-50 text-emerald-800 dark:border-brand-emerald/20 dark:bg-brand-emerald/10 dark:text-brand-emerald px-2 py-0.5 text-[10px] font-medium">
-            Korapay NGN + Stablecoins
+            Card NGN + Stablecoins
           </span>
         </div>
 
@@ -65,7 +65,7 @@ export function DashboardCashflow() {
         <div className="flex items-center gap-4 text-caption text-gray-600 dark:text-[#8a8f98]">
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-cyan-500 dark:bg-cyan-400" />
-            <span>Treasury Inflow (Korapay/Crypto)</span>
+            <span>Treasury Inflow (Card/Crypto)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-rose-500 dark:bg-rose-400" />

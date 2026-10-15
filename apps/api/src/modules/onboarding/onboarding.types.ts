@@ -4,6 +4,9 @@ export interface UpdateCompanyProfileDto {
   taxId?: string;
   industry?: string;
   country?: string;
+  state?: string;
+  lga?: string;
+  city?: string;
 }
 
 export interface UpdateCompanyComplianceDto {

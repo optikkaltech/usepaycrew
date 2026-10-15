@@ -24,7 +24,7 @@ export function HeroSection() {
 
       {/* Subtitle */}
       <p className="mt-5 text-body-sm sm:text-body-md text-gray-600 dark:text-[#8a8f98] max-w-2xl leading-relaxed">
-        PayCrew empowers African tech companies to fund corporate treasuries via Korapay or crypto,
+        PayCrew empowers African tech companies to fund corporate treasuries via card or crypto,
         disburse USDC/USDT payroll in 1-click, and let remote contractors cash out straight to their local bank accounts.
       </p>
 

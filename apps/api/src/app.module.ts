@@ -17,6 +17,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { ProvidersModule } from './providers/providers.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { LocationsModule } from './modules/locations/locations.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
     AdminModule,
     OnboardingModule,
     SubscriptionsModule,
+    LocationsModule,
   ],
 })
 export class AppModule {}

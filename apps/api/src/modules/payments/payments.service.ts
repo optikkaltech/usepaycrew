@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { PaymentEntity, WorkerEntity, CompanyEntity } from '../../database/entities';
-import { Currency, PaymentStatus, PayoutMethodType } from '@paycrew/shared-types';
+import { Currency, PaymentStatus, PayoutMethodType, RampProviderType } from '@paycrew/shared-types';
 import { LedgerService } from '../ledger/ledger.service';
 import { RampProviderFactory } from '../../providers/ramp/ramp.factory';
 import { PaymentsWebhookService } from './payments-webhook.service';
@@ -32,16 +32,15 @@ export class PaymentsService {
 
   async getMarketRate(pair = 'USDT_NGN'): Promise<{ pair: string; rate: number; source: string }> {
     try {
-      const resp = await fetch('https://app.quidax.com/api/v1/markets/usdtngn/ticker', { cache: 'no-store' });
-      if (resp.ok) {
-        const json = await resp.json();
-        const price = parseFloat(json.data?.ticker?.last || '0');
-        if (price > 0) return { pair, rate: price, source: 'Quidax Live Market' };
+      const quidax = this.rampFactory.getProvider(RampProviderType.QUIDAX);
+      if (quidax?.getQuote) {
+        const quote = await quidax.getQuote('1', 'usdt', 'ngn', 'bep20');
+        if (quote.rate > 0) return { pair, rate: quote.rate, source: quote.source };
       }
     } catch {
-      // OTC liquidity rate
+      // Fallback to default Ramp OTC rate
     }
-    return { pair, rate: 1540.0, source: 'Quidax OTC Liquidity' };
+    return { pair, rate: 1585.0, source: 'Quidax Ramp OTC' };
   }
 
   async createPayment(companyId: string, dto: CreatePaymentDto): Promise<PaymentEntity> {

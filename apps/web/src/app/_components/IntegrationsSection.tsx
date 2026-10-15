@@ -3,7 +3,7 @@ import { ArrowRightIcon, PlugIcon } from '@/assets';
 
 export function IntegrationsSection() {
   const apps = [
-    { name: 'Korapay', bg: 'bg-[#002244]', text: 'KP', textColor: 'text-white' },
+    { name: 'Direct Settlement', bg: 'bg-[#002244]', text: 'DS', textColor: 'text-white' },
     { name: 'Quidax', bg: 'bg-[#0052FF]', text: 'Q', textColor: 'text-white' },
     { name: 'PayCrew', bg: 'bg-brand-emerald', text: 'P', textColor: 'text-black', featured: true },
     { name: 'Base', bg: 'bg-[#0052FF]', text: 'Base', textColor: 'text-white' },
@@ -28,7 +28,7 @@ export function IntegrationsSection() {
 
         {/* Subtitle */}
         <p className="mt-4 text-body-sm sm:text-body-md text-gray-600 dark:text-[#8a8f98] max-w-xl mx-auto leading-relaxed">
-          Fund, disburse, and reconcile seamlessly across Korapay instant bank transfer rails,
+          Fund, disburse, and reconcile seamlessly across instant card &amp; direct bank transfer rails,
           Quidax OTC liquidity, and leading stablecoin networks.
         </p>
 

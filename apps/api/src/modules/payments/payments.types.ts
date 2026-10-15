@@ -63,14 +63,36 @@ export interface WebhookEventPayload {
   event: string;
   data: {
     id?: string;
+    public_id?: string;
     reference?: string;
+    merchant_reference?: string;
     status?: string;
     currency?: string;
     amount?: string;
+    from_amount?: string;
+    to_amount?: string;
     recipient_address?: string;
     wallet_address?: string;
     txid?: string;
     providerTxId?: string;
     failureReason?: string;
+    error_message?: string;
+    crypto_deposit?: {
+      public_id?: string;
+      txid?: string;
+      status?: string;
+      amount?: string;
+      currency?: string;
+      network?: string;
+      address?: string;
+    };
+    fiat_payout?: {
+      public_id?: string;
+      amount?: string;
+      status?: string;
+      currency?: string;
+      processor_fee?: string;
+    };
+    [key: string]: any;
   };
 }

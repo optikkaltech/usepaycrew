@@ -26,10 +26,18 @@ export interface PayoutResponse {
   rawResponse?: any;
 }
 
+export interface RampQuoteResult {
+  rate: number;
+  fee: string;
+  toAmount: string;
+  source: string;
+}
+
 export interface IRampProvider {
   readonly providerName: RampProviderType;
   generateDepositAddress(currency: Currency, network?: string): Promise<DepositAddressResult>;
   initiatePayout(request: PayoutRequest): Promise<PayoutResponse>;
   checkStatus(providerRef: string): Promise<{ status: PaymentStatus; failureReason?: string }>;
   verifyWebhook(payload: any, signature: string): boolean;
+  getQuote?(amount?: string, token?: string, currency?: string, network?: string): Promise<RampQuoteResult>;
 }
