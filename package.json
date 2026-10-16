@@ -7,6 +7,10 @@
     "dev:api": "pnpm --filter @paycrew/api dev",
     "dev:web": "pnpm --filter @paycrew/web dev",
     "build": "pnpm --filter @paycrew/* build",
+    "build:api": "pnpm --filter @paycrew/shared-types build && pnpm --filter @paycrew/api build",
+    "build:web": "pnpm --filter @paycrew/shared-types build && pnpm --filter @paycrew/web build",
+    "start:api": "pnpm --filter @paycrew/api start:prod",
+    "start:web": "pnpm --filter @paycrew/web start",
     "test": "pnpm --filter @paycrew/* test",
     "typecheck": "pnpm --filter @paycrew/* typecheck",
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/.next apps/*/dist"
