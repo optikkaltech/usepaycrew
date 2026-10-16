@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CompanyEntity, WorkerEntity } from '../../database/entities';
+import { CompanyEntity, WorkerEntity, SubscriptionPlanEntity } from '../../database/entities';
 import { SubscriptionsService } from './subscriptions.service';
 import { SubscriptionsController } from './subscriptions.controller';
 import { ProvidersModule } from '../../providers/providers.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CompanyEntity, WorkerEntity]),
+    TypeOrmModule.forFeature([CompanyEntity, WorkerEntity, SubscriptionPlanEntity]),
     ProvidersModule,
   ],
   controllers: [SubscriptionsController],

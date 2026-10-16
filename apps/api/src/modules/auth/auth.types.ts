@@ -4,6 +4,7 @@ import { UserRole, UserStatus } from '@paycrew/shared-types';
 export interface JwtPayload {
   sub: string;
   email: string;
+  fullName?: string;
   role: UserRole;
   companyId: string | null;
   workerId?: string | null;
@@ -45,6 +46,10 @@ export class LoginDto {
   @IsString()
   @IsOptional()
   twoFactorToken?: string;
+
+  @IsString()
+  @IsOptional()
+  turnstileToken?: string;
 }
 
 export interface AuthResponse {

@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Get, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Query } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { GoogleAuthService, GoogleAuthDto } from './google-auth.service';
 import { RegisterDto, LoginDto } from './auth.types';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TurnstileGuard } from './guards/turnstile.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
@@ -19,12 +21,16 @@ export class AuthController {
   }
 
   @Post('register')
+  @UseGuards(ThrottlerGuard, TurnstileGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async register(@Body() dto: RegisterDto) {
     const result = await this.authService.registerEmployer(dto);
     return { success: true, data: result };
   }
 
   @Post('login')
+  @UseGuards(ThrottlerGuard, TurnstileGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   async login(@Body() dto: LoginDto) {
     const result = await this.authService.login(dto);
     return { success: true, data: result };
@@ -45,7 +51,8 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getProfile(@CurrentUser() user: any) {
+  async getProfile(@CurrentUser('id') userId: string) {
+    const user = await this.authService.getProfile(userId);
     return { success: true, data: user };
   }
 

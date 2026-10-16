@@ -165,3 +165,35 @@ export interface FeeCalculation {
   netPayout: number;
   currency: Currency;
 }
+
+export interface SubscriptionPlanDto {
+  id: string;
+  code: SubscriptionPlan;
+  name: string;
+  badge?: string;
+  baseWorkers: number;
+  basePriceNgn: number;
+  basePriceUsd: number;
+  extraWorkerRateNgn: number;
+  extraWorkerRateUsd: number;
+  description: string;
+  features: string;
+  isActive: boolean;
+  isRecommended: boolean;
+  sortOrder: number;
+}
+
+export function getCurrencyForCountry(countryCode?: string | null): {
+  primaryCurrency: Currency;
+  cryptoCurrency: Currency;
+  isNaira: boolean;
+  currencySymbol: string;
+} {
+  const isNg = (countryCode || '').toUpperCase() === 'NG';
+  return {
+    primaryCurrency: isNg ? Currency.NGN : Currency.USD,
+    cryptoCurrency: Currency.USDT,
+    isNaira: isNg,
+    currencySymbol: isNg ? '₦' : '$',
+  };
+}

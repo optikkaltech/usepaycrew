@@ -9,6 +9,8 @@ import {
   PaymentEntity,
   ContractEntity,
   AuditLogEntity,
+  SubscriptionPlanEntity,
+  CompanyWalletEntity,
 } from './entities';
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -28,6 +30,8 @@ export const dataSourceOptions: DataSourceOptions = {
     PaymentEntity,
     ContractEntity,
     AuditLogEntity,
+    SubscriptionPlanEntity,
+    CompanyWalletEntity,
   ],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   synchronize: false,

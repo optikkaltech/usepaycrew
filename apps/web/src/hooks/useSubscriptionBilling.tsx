@@ -5,6 +5,14 @@ import { SubscriptionService, OnboardingService } from '@/services';
 import { useToast } from './useToast';
 import { normalizeError } from '@/utils';
 
+export function useSubscriptionPlans(country?: string) {
+  return useQuery({
+    queryKey: ['subscription-plans', country],
+    queryFn: () => SubscriptionService.getPlans(country),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useSubscriptionDeposit(planId: string, network: string) {
   return useQuery({
     queryKey: ['subscription-deposit-address', planId, network],

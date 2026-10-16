@@ -59,7 +59,7 @@ export class CompanyEntity {
   @Column({
     type: 'enum',
     enum: KycProviderType,
-    default: KycProviderType.MOCK,
+    default: KycProviderType.PREMBLY,
   })
   activeKycProvider: KycProviderType;
 

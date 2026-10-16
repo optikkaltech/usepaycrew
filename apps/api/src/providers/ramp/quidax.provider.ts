@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { Currency, PaymentStatus, RampProviderType } from '@paycrew/shared-types';
 import {
@@ -27,12 +27,7 @@ export class QuidaxRampProvider implements IRampProvider {
     return !this.rampPrivateKey || this.rampPrivateKey.startsWith('sk_test_quidax_ramp_key');
   }
 
-  async getQuote(
-    amount = '10',
-    token = 'usdt',
-    currency = 'ngn',
-    network = 'bep20',
-  ): Promise<RampQuoteResult> {
+  async getQuote(amount = '10', token = 'usdt', currency = 'ngn', network = 'bep20'): Promise<RampQuoteResult> {
     const qdxToken = token.toLowerCase();
     const qdxCurrency = currency.toLowerCase();
     const qdxNetwork = this.networkMap[network.toUpperCase()] || network.toLowerCase();
@@ -40,20 +35,13 @@ export class QuidaxRampProvider implements IRampProvider {
     if (!this.isMockMode()) {
       try {
         const url = `${this.rampBaseUrl}/api/v1/merchants/purchase_quotes/sell?token=${qdxToken}&currency=${qdxCurrency}&token_amount=${amount}&token_network=${qdxNetwork}`;
-        const resp = await fetch(url, {
-          headers: { 'x-private-key': this.rampPrivateKey, accept: 'application/json' },
-        });
+        const resp = await fetch(url, { headers: { 'x-private-key': this.rampPrivateKey, accept: 'application/json' } });
         const json = await resp.json();
         if (resp.ok && json.data?.to_amount) {
           const toAmountNum = parseFloat(json.data.to_amount);
           const tokenAmountNum = parseFloat(amount);
           const effectiveRate = tokenAmountNum > 0 ? toAmountNum / tokenAmountNum : toAmountNum;
-          return {
-            rate: Math.round(effectiveRate * 100) / 100,
-            fee: json.data.fee || '50.0',
-            toAmount: json.data.to_amount,
-            source: 'Quidax Ramp Live Quote',
-          };
+          return { rate: Math.round(effectiveRate * 100) / 100, fee: json.data.fee || '50.0', toAmount: json.data.to_amount, source: 'Quidax Ramp Live Quote' };
         }
         throw new Error(json.message || `Quidax Ramp returned HTTP ${resp.status}`);
       } catch (err: any) {
@@ -61,14 +49,14 @@ export class QuidaxRampProvider implements IRampProvider {
         throw new Error(`Quidax live quote unavailable: ${err.message}`);
       }
     }
-
     throw new Error('Quidax Ramp API key is not configured or in mock mode');
   }
 
   async generateDepositAddress(currency: Currency, network = 'TRON'): Promise<DepositAddressResult> {
+    const qdxCurrency = currency.toLowerCase();
     const qdxNetwork = this.networkMap[network.toUpperCase()] || network.toLowerCase();
-    
-    // Check if a dedicated Quidax merchant deposit address is configured for this network
+    const secretKey = process.env.QUIDAX_SECRET_KEY || process.env.QUIDAX_RAMP_PRIVATE_KEY;
+
     const configuredAddress =
       process.env[`QUIDAX_DEPOSIT_ADDRESS_${network.toUpperCase()}`] ||
       process.env.QUIDAX_DEPOSIT_WALLET_ADDRESS;
@@ -77,9 +65,38 @@ export class QuidaxRampProvider implements IRampProvider {
       return { address: configuredAddress, network: qdxNetwork.toUpperCase() };
     }
 
-    // If no dedicated merchant wallet address is configured in env or via API, raise explicit error
-    throw new Error(
-      `No live Quidax deposit address configured for network ${network.toUpperCase()}. Please configure your Quidax treasury deposit address in your environment settings.`
+    if (secretKey && !secretKey.startsWith('sk_test_quidax_ramp_key')) {
+      try {
+        const url = `https://openapi.quidax.io/exchange-open-api/api/v1/users/me/wallets/${qdxCurrency}/addresses?network=${qdxNetwork}`;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${secretKey}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+        });
+        const json = await resp.json();
+        if (resp.ok && json.data?.address) {
+          return { address: json.data.address, network: qdxNetwork.toUpperCase() };
+        }
+
+        const getUrl = `https://openapi.quidax.io/exchange-open-api/api/v1/users/me/wallets/${qdxCurrency}/address`;
+        const getResp = await fetch(getUrl, {
+          headers: { Authorization: `Bearer ${secretKey}`, Accept: 'application/json' },
+        });
+        const getJson = await getResp.json();
+        if (getResp.ok && getJson.data?.address) {
+          return { address: getJson.data.address, network: qdxNetwork.toUpperCase() };
+        }
+
+        const msg = json?.message || json?.data?.message || `Quidax HTTP ${resp.status}`;
+        throw new BadRequestException(`Quidax live wallet error: ${msg}. Please ensure your Quidax API key has wallet generation permissions.`);
+      } catch (err: any) {
+        if (err instanceof BadRequestException) throw err;
+        this.logger.error(`Quidax live address error: ${err.message}`);
+        throw new BadRequestException(`Quidax address error: ${err.message}`);
+      }
+    }
+
+    throw new BadRequestException(
+      `No live Quidax API key or deposit address configured for ${currency} (${network}). Please set QUIDAX_SECRET_KEY or QUIDAX_DEPOSIT_ADDRESS_${network.toUpperCase()} in your environment.`
     );
   }
 
@@ -138,18 +155,11 @@ export class QuidaxRampProvider implements IRampProvider {
         throw err;
       }
     }
-
-    return {
-      success: true,
-      providerReference: `qdx_ramp_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
-      status: PaymentStatus.PAID,
-      fee: '50.00',
-      rawResponse: { provider: 'quidax-ramp', mode: 'sandbox' },
-    };
+    throw new BadRequestException('Quidax Ramp private key missing or invalid. Live credentials required.');
   }
 
   async checkStatus(providerRef: string): Promise<{ status: PaymentStatus; failureReason?: string }> {
-    this.logger.log(`Quidax Ramp: Requerying off-ramp transaction for ${providerRef}`);
+    this.logger.log(`Quidax Ramp: Requerying transaction ${providerRef}`);
     if (!this.isMockMode()) {
       try {
         const resp = await fetch(`${this.rampBaseUrl}/api/v1/merchants/off_ramp_transaction/${providerRef}`, {
@@ -167,7 +177,7 @@ export class QuidaxRampProvider implements IRampProvider {
         this.logger.error(`Quidax Ramp requery error: ${err.message}`);
       }
     }
-    return { status: PaymentStatus.PAID };
+    throw new BadRequestException('Quidax live credentials required to query payout status.');
   }
 
   verifyWebhook(payload: any, signature: string): boolean {

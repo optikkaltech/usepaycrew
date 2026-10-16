@@ -14,13 +14,13 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
   const forwardHeaders = new Headers();
   forwardHeaders.set('Content-Type', req.headers.get('content-type') || 'application/json');
 
-  // Read httpOnly cookie or incoming Authorization header
-  const authCookie = req.cookies.get('pc_at')?.value;
+  // Prioritize incoming Authorization header from client, fall back to cookie
   const incomingAuth = req.headers.get('authorization');
-  if (authCookie) {
-    forwardHeaders.set('Authorization', `Bearer ${authCookie}`);
-  } else if (incomingAuth) {
+  const authCookie = req.cookies.get('pc_at')?.value;
+  if (incomingAuth) {
     forwardHeaders.set('Authorization', incomingAuth);
+  } else if (authCookie) {
+    forwardHeaders.set('Authorization', `Bearer ${authCookie}`);
   }
 
   const body = req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined;
@@ -42,7 +42,13 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
     });
 
     // Handle Auth Endpoints: set httpOnly session cookies
-    if (backendRes.ok && (endpoint.includes('auth/login') || endpoint.includes('auth/google') || endpoint.includes('auth/register'))) {
+    const isAuthEndpoint =
+      endpoint === 'auth/login' ||
+      endpoint === 'auth/google' ||
+      endpoint === 'auth/register' ||
+      endpoint === 'auth/refresh';
+
+    if (backendRes.ok && isAuthEndpoint) {
       try {
         const parsed = JSON.parse(data);
         const tokens = parsed.data || parsed;

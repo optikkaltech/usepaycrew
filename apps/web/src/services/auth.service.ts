@@ -1,10 +1,10 @@
 import { http } from './http.service';
 
 export const AuthService = {
-  login: async (credentials: { email: string; password: string; twoFactorToken?: string }) => {
+  login: async (credentials: { email: string; password: string; twoFactorToken?: string; turnstileToken?: string }) => {
     return http.post('/auth/login', credentials);
   },
-  register: async (payload: { fullName: string; companyName: string; email: string; password: string }) => {
+  register: async (payload: { fullName: string; companyName: string; email: string; password: string; turnstileToken?: string }) => {
     return http.post('/auth/register', payload);
   },
   getMe: async () => {

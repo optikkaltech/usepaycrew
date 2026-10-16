@@ -11,6 +11,8 @@ import { RolesGuard } from './guards/roles.guard';
 
 import { GoogleAuthService } from './google-auth.service';
 
+import { TurnstileGuard } from './guards/turnstile.guard';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity, CompanyEntity]),
@@ -21,8 +23,8 @@ import { GoogleAuthService } from './google-auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleAuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
-  exports: [AuthService, GoogleAuthService, JwtAuthGuard, RolesGuard, JwtModule],
+  providers: [AuthService, GoogleAuthService, JwtStrategy, JwtAuthGuard, RolesGuard, TurnstileGuard],
+  exports: [AuthService, GoogleAuthService, JwtAuthGuard, RolesGuard, TurnstileGuard, JwtModule],
 })
 export class AuthModule {}
 

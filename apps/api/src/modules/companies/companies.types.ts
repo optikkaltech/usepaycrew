@@ -4,11 +4,20 @@ export interface UpdateCompanyDto {
   country?: string;
 }
 
+export interface CreateCompanyWalletDto {
+  currency: string;
+  network: string;
+}
+
+export interface AssetNetworkConfig {
+  currency: string;
+  name: string;
+  networks: string[];
+}
+
 export interface CompanyFundingInfo {
   companyId: string;
   name: string;
-  virtualAccountBank: string | null;
-  virtualAccountNumber: string | null;
-  depositWalletAddress: string | null;
-  supportedCurrencies: string[];
+  wallets: any[];
+  supportedAssets: AssetNetworkConfig[];
 }

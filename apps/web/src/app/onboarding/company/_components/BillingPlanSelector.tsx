@@ -2,24 +2,26 @@
 
 import { CheckCircleIcon } from '@/assets';
 
-export interface PlanOption {
+export interface PlanItem {
   id: 'FREE' | 'STARTER' | 'GROWTH' | 'ENTERPRISE';
   name: string;
   badge?: string;
-  priceNgn: string;
-  priceUsd: string;
+  priceFormatted?: string;
+  priceSubtitle?: string;
+  priceNgn?: string;
+  priceUsd?: string;
   description: string;
   features: string;
   recommended?: boolean;
 }
 
-export const BILLING_PLANS: PlanOption[] = [
+export const DEFAULT_PLANS: PlanItem[] = [
   {
     id: 'FREE',
     name: 'Free Starter',
     badge: 'Free Forever',
-    priceNgn: '₦0',
-    priceUsd: '$0 / mo',
+    priceFormatted: '₦0',
+    priceSubtitle: '($0 USD / mo)',
     description: 'Perfect for small teams getting started with crypto payroll.',
     features: 'Up to 3 active contractor seats • No card required',
   },
@@ -28,8 +30,8 @@ export const BILLING_PLANS: PlanOption[] = [
     name: 'Growth Plan',
     badge: 'Recommended',
     recommended: true,
-    priceNgn: '₦15,000',
-    priceUsd: '$10 / mo',
+    priceFormatted: '₦15,000',
+    priceSubtitle: '($10 USD / mo)',
     description: 'Ideal for remote teams paying up to 10 contractors.',
     features: '10 contractor seats • Unlimited payroll runs • Extra seats: $1/mo',
   },
@@ -37,24 +39,36 @@ export const BILLING_PLANS: PlanOption[] = [
     id: 'GROWTH',
     name: 'Scale Plan',
     badge: 'Scaling Teams',
-    priceNgn: '₦45,000',
-    priceUsd: '$30 / mo',
+    priceFormatted: '₦45,000',
+    priceSubtitle: '($30 USD / mo)',
     description: 'Designed for scaling companies requiring dual controls.',
     features: '50 contractor seats • Dual Maker-Checker approvals • Priority liquidity',
   },
 ];
 
 interface BillingPlanSelectorProps {
+  plans?: PlanItem[];
   selectedPlan: 'FREE' | 'STARTER' | 'GROWTH' | 'ENTERPRISE';
   onSelectPlan: (plan: 'FREE' | 'STARTER' | 'GROWTH' | 'ENTERPRISE') => void;
+  isLoading?: boolean;
 }
 
-export function BillingPlanSelector({ selectedPlan, onSelectPlan }: BillingPlanSelectorProps) {
+export function BillingPlanSelector({
+  plans,
+  selectedPlan,
+  onSelectPlan,
+  isLoading,
+}: BillingPlanSelectorProps) {
+  const displayPlans = plans && plans.length > 0 ? plans : DEFAULT_PLANS;
+
   return (
     <div className="flex flex-col gap-2.5">
-      <label className="text-label-sm font-semibold text-foreground">Select Subscription Plan</label>
+      <div className="flex items-center justify-between">
+        <label className="text-label-sm font-semibold text-foreground">Select Subscription Plan</label>
+        {isLoading && <span className="text-caption text-muted-foreground animate-pulse">Updating rates...</span>}
+      </div>
       <div className="grid grid-cols-1 gap-2.5">
-        {BILLING_PLANS.map((plan) => {
+        {displayPlans.map((plan) => {
           const isSelected = selectedPlan === plan.id;
           return (
             <button
@@ -85,8 +99,12 @@ export function BillingPlanSelector({ selectedPlan, onSelectPlan }: BillingPlanS
                 )}
               </div>
               <div className="mt-1.5 flex items-baseline gap-1.5">
-                <span className="text-display-xs font-extrabold text-foreground">{plan.priceNgn}</span>
-                <span className="text-caption text-muted-foreground">({plan.priceUsd})</span>
+                <span className="text-display-xs font-extrabold text-foreground">
+                  {plan.priceFormatted || plan.priceNgn}
+                </span>
+                <span className="text-caption text-muted-foreground">
+                  {plan.priceSubtitle || plan.priceUsd}
+                </span>
               </div>
               <p className="mt-1 text-caption text-muted-foreground leading-relaxed">{plan.description}</p>
               <p className="mt-1 text-[11px] font-medium text-brand-emerald">{plan.features}</p>

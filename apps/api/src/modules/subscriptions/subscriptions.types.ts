@@ -10,6 +10,25 @@ export interface SubscriptionBillingSummary {
   extraWorkerRateUsd: number;
   totalMonthlyNgn: number;
   totalMonthlyUsd: number;
+  primaryCurrency: string;
+  isNaira: boolean;
+  totalMonthlyFormatted: string;
+}
+
+export interface AdminUpsertPlanDto {
+  code: string;
+  name: string;
+  badge?: string;
+  baseWorkers: number;
+  basePriceNgn: number;
+  basePriceUsd: number;
+  extraWorkerRateNgn: number;
+  extraWorkerRateUsd: number;
+  description?: string;
+  features?: string;
+  isActive?: boolean;
+  isRecommended?: boolean;
+  sortOrder?: number;
 }
 
 export interface InitiateSubscriptionPaymentDto {

@@ -72,6 +72,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Account is not active or has been suspended');
+    }
+
     const isMatch = await argon2.verify(user.passwordHash, dto.password).catch(() => false);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
@@ -135,16 +139,8 @@ export class AuthService {
       if (!user) throw new UnauthorizedException('User not found');
 
       const accessToken = this.jwtService.sign(
-        {
-          sub: user.id,
-          email: user.email,
-          role: user.role,
-          companyId: user.companyId,
-        },
-        {
-          secret: process.env.JWT_SECRET || 'paycrew_jwt_super_secret_key_2026',
-          expiresIn: '15m',
-        },
+        { sub: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId },
+        { secret: process.env.JWT_SECRET || 'paycrew_jwt_super_secret_key_2026', expiresIn: '15m' },
       );
       return { accessToken };
     } catch {
@@ -152,23 +148,25 @@ export class AuthService {
     }
   }
 
-  private generateTokens(user: UserEntity): AuthResponse {
-    const payload: JwtPayload = {
-      sub: user.id,
+  async getProfile(userId: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    return {
+      id: user.id,
       email: user.email,
+      maskedEmail: maskEmail(user.email),
+      fullName: user.fullName,
       role: user.role,
+      status: user.status,
+      twoFactorEnabled: user.twoFactorEnabled,
       companyId: user.companyId,
     };
+  }
 
-    const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET || 'paycrew_jwt_super_secret_key_2026',
-      expiresIn: '15m',
-    });
-
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET || 'paycrew_refresh_super_secret_key_2026',
-      expiresIn: '7d',
-    });
+  private generateTokens(user: UserEntity): AuthResponse {
+    const payload: JwtPayload = { sub: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId };
+    const accessToken = this.jwtService.sign(payload, { secret: process.env.JWT_SECRET || 'paycrew_jwt_super_secret_key_2026', expiresIn: '15m' });
+    const refreshToken = this.jwtService.sign(payload, { secret: process.env.JWT_REFRESH_SECRET || 'paycrew_refresh_super_secret_key_2026', expiresIn: '7d' });
 
     return {
       accessToken,

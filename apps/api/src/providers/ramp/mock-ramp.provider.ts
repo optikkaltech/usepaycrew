@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Currency, PaymentStatus, RampProviderType } from '@paycrew/shared-types';
 import {
   DepositAddressResult,
@@ -12,26 +12,22 @@ export class MockRampProvider implements IRampProvider {
   readonly providerName = RampProviderType.MOCK;
 
   async generateDepositAddress(currency: Currency, network = 'Polygon'): Promise<DepositAddressResult> {
-    return {
-      address: '0x71C8fb866336650E4F4259b3A6D63Ea4B0866952',
-      network,
-    };
+    throw new BadRequestException(
+      `No live crypto wallet address configured for ${currency} on ${network}. Please configure Quidax with live API credentials to generate real blockchain deposit addresses.`
+    );
   }
 
   async initiatePayout(request: PayoutRequest): Promise<PayoutResponse> {
-    return {
-      success: true,
-      providerReference: `mock_ramp_tx_${Date.now()}`,
-      status: PaymentStatus.PAID,
-      fee: '150.00',
-    };
+    throw new BadRequestException(
+      'Live crypto payout rails required. Please configure Quidax or YellowCard credentials.'
+    );
   }
 
   async checkStatus(): Promise<{ status: PaymentStatus; failureReason?: string }> {
-    return { status: PaymentStatus.PAID };
+    return { status: PaymentStatus.FAILED, failureReason: 'Live ramp provider required' };
   }
 
   verifyWebhook(): boolean {
-    return true;
+    return false;
   }
 }

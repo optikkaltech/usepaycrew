@@ -7,3 +7,4 @@ export * from './subscription.service';
 export * from './worker.service';
 export * from './payout.service';
 export * from './kyc.service';
+export * from './wallet.service';

@@ -21,10 +21,9 @@ export class RampProviderFactory {
   }
 
   getProvider(type: RampProviderType = RampProviderType.QUIDAX): IRampProvider {
-    const provider = this.providers.get(type);
+    const provider = this.providers.get(type) || this.quidax;
     if (!provider) {
-      this.logger.warn(`Provider ${type} not found. Falling back to MockRampProvider`);
-      return this.mockRamp;
+      throw new Error(`Ramp provider ${type} is not available and Quidax is unconfigured.`);
     }
     return provider;
   }

@@ -1,103 +1,97 @@
 'use client';
 
 import { useState } from 'react';
-import { CreditCardIcon, ShieldCheckIcon } from '@/assets';
+import { CreditCardIcon, ShieldCheckIcon, ArrowUpRightIcon, RefreshCwIcon } from '@/assets';
+import { SubscriptionService } from '@/services';
+import { useToast } from '@/hooks';
+import { normalizeError } from '@/utils';
 
 interface BillingCardFormProps {
   amountLabel: string;
+  selectedPlan: string;
   onPay: () => void;
   isLoading: boolean;
 }
 
-export function BillingCardForm({ amountLabel, onPay, isLoading }: BillingCardFormProps) {
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvc, setCvc] = useState('');
-  const [cardholder, setCardholder] = useState('');
+export function BillingCardForm({ amountLabel, selectedPlan, onPay, isLoading }: BillingCardFormProps) {
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const toast = useToast();
 
-  const formatCardNumber = (val: string) => {
-    const clean = val.replace(/\D/g, '').substring(0, 16);
-    return clean.replace(/(\d{4})/g, '$1 ').trim();
+  const handleCardCheckout = async () => {
+    setIsRedirecting(true);
+    try {
+      const res = await SubscriptionService.initiate({
+        currency: 'NGN',
+        paymentMethod: 'CARD',
+        plan: selectedPlan,
+      });
+
+      if (res?.checkoutUrl) {
+        toast.success('Redirecting to Secure Checkout...');
+        window.location.href = res.checkoutUrl;
+      } else {
+        onPay();
+      }
+    } catch (err) {
+      setIsRedirecting(false);
+      toast.error(normalizeError(err).message || 'Failed to initialize checkout');
+    }
   };
 
-  const formatExpiry = (val: string) => {
-    const clean = val.replace(/\D/g, '').substring(0, 4);
-    if (clean.length >= 2) return `${clean.substring(0, 2)}/${clean.substring(2)}`;
-    return clean;
-  };
+  const isProcessing = isLoading || isRedirecting;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 text-left">
+    <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-4 text-left">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-primary font-bold text-label-sm">
           <CreditCardIcon className="h-4 w-4" />
-          <span>Pay Directly with Debit / Credit Card</span>
+          <span>Secure Card Checkout</span>
         </div>
         <span className="text-label-md font-extrabold text-foreground">{amountLabel}</span>
       </div>
 
-      <div className="space-y-2.5">
-        <div>
-          <label className="block text-caption font-semibold text-muted-foreground mb-1">Card Number</label>
-          <input
-            type="text"
-            placeholder="4242 •••• •••• 4242"
-            value={cardNumber}
-            maxLength={19}
-            onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-            className="w-full h-10 px-3 text-body-xs font-mono bg-secondary/30 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-          />
+      <div className="rounded-xl border border-border bg-card p-3.5 space-y-3">
+        <div className="flex items-center justify-between text-caption font-semibold text-muted-foreground border-b border-border/60 pb-2">
+          <span>Supported Payment Channels</span>
+          <span className="text-[10px] text-brand-emerald font-bold uppercase tracking-wider bg-brand-emerald/10 px-2 py-0.5 rounded">
+            Live Gateway
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="block text-caption font-semibold text-muted-foreground mb-1">Expires (MM/YY)</label>
-            <input
-              type="text"
-              placeholder="MM/YY"
-              value={expiry}
-              maxLength={5}
-              onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-              className="w-full h-10 px-3 text-body-xs font-mono bg-secondary/30 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-          <div>
-            <label className="block text-caption font-semibold text-muted-foreground mb-1">CVC</label>
-            <input
-              type="password"
-              placeholder="•••"
-              value={cvc}
-              maxLength={4}
-              onChange={(e) => setCvc(e.target.value.replace(/\D/g, ''))}
-              className="w-full h-10 px-3 text-body-xs font-mono bg-secondary/30 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
+        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-secondary/30 border border-border/40 text-caption">
+          <CreditCardIcon className="h-4 w-4 text-primary shrink-0" />
+          <span className="text-foreground font-medium text-body-xs">
+            Debit / Credit Cards (Mastercard, Visa, Verve)
+          </span>
         </div>
 
-        <div>
-          <label className="block text-caption font-semibold text-muted-foreground mb-1">Cardholder Name</label>
-          <input
-            type="text"
-            placeholder="Jane Doe"
-            value={cardholder}
-            onChange={(e) => setCardholder(e.target.value)}
-            className="w-full h-10 px-3 text-body-xs bg-secondary/30 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          You will be seamlessly redirected to the secure checkout page to complete your payment with full fraud protection. Your subscription will be activated automatically once the transaction is authorized.
+        </p>
       </div>
 
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1">
+      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
         <ShieldCheckIcon className="h-3.5 w-3.5 text-success shrink-0" />
-        <span>PCI-DSS Compliant 256-Bit SSL Encrypted Checkout</span>
+        <span>PCI-DSS Level 1 Compliant • 256-Bit SSL Encrypted</span>
       </div>
 
       <button
         type="button"
-        disabled={isLoading || cardNumber.length < 15}
-        onClick={onPay}
-        className="w-full min-h-[44px] mt-1 bg-primary text-primary-foreground rounded-lg font-bold text-label-sm hover:opacity-90 shadow-brand transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+        disabled={isProcessing}
+        onClick={handleCardCheckout}
+        className="w-full min-h-[44px] mt-1 bg-primary text-primary-foreground rounded-lg font-bold text-label-sm hover:opacity-90 shadow-brand transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
       >
-        {isLoading ? 'Processing Card Payment...' : `Pay ${amountLabel} & Activate`}
+        {isProcessing ? (
+          <>
+            <RefreshCwIcon className="h-4 w-4 animate-spin" />
+            <span>Connecting to Secure Checkout...</span>
+          </>
+        ) : (
+          <>
+            <span>Proceed to Checkout ({amountLabel})</span>
+            <ArrowUpRightIcon className="h-4 w-4" />
+          </>
+        )}
       </button>
     </div>
   );

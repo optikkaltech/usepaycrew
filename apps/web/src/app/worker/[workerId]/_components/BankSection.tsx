@@ -36,7 +36,7 @@ export function BankSection({ workerId, workerName, payoutMethods, onSuccess }: 
   const [accountNumber, setAccountNumber] = useState('');
   const [resolvedName, setResolvedName] = useState<string | null>(null);
 
-  // Fetch live Korapay bank list via TanStack Query & PayoutService
+  // Fetch live bank list via TanStack Query & PayoutService
   const { data: banks = defaultBanks } = useQuery({
     queryKey: ['payout-banks'],
     queryFn: async () => {

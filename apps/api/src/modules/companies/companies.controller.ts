@@ -1,6 +1,6 @@
-import { Controller, Get, Patch, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, UseGuards, Req } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
-import { UpdateCompanyDto } from './companies.types';
+import { UpdateCompanyDto, CreateCompanyWalletDto } from './companies.types';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('companies')
@@ -17,6 +17,18 @@ export class CompaniesController {
   @Get('funding-info')
   async getFundingInfo(@Req() req: any) {
     const data = await this.companiesService.getFundingInfo(req.user.companyId);
+    return { success: true, data };
+  }
+
+  @Get('wallets')
+  async getWallets(@Req() req: any) {
+    const data = await this.companiesService.getWallets(req.user.companyId);
+    return { success: true, data };
+  }
+
+  @Post('wallets')
+  async createWallet(@Req() req: any, @Body() dto: CreateCompanyWalletDto) {
+    const data = await this.companiesService.createWallet(req.user.companyId, dto);
     return { success: true, data };
   }
 

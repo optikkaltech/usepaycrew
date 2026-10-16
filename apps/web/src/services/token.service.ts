@@ -1,44 +1,57 @@
-import Cookies from 'js-cookie';
+const ACCESS_TOKEN_KEY = 'pc_access_token';
+const REFRESH_TOKEN_KEY = 'pc_refresh_token';
 
-const ACCESS_TOKEN_KEY = 'pc_at';
-const REFRESH_TOKEN_KEY = 'pc_rt';
+function getStorage(key: string): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
 
-let memoryAccessToken: string | null = null;
+function setStorage(key: string, value: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage full or blocked — silent fail
+  }
+}
+
+function removeStorage(key: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Silent fail
+  }
+}
 
 export const TokenService = {
   getAccessToken(): string | null {
-    if (memoryAccessToken) return memoryAccessToken;
-    return Cookies.get(ACCESS_TOKEN_KEY) || null;
+    return getStorage(ACCESS_TOKEN_KEY);
   },
 
   setAccessToken(token: string): void {
-    memoryAccessToken = token;
-    Cookies.set(ACCESS_TOKEN_KEY, token, {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      expires: 1 / 96, // 15 mins
-    });
+    setStorage(ACCESS_TOKEN_KEY, token);
   },
 
   getRefreshToken(): string | null {
-    return Cookies.get(REFRESH_TOKEN_KEY) || null;
+    return getStorage(REFRESH_TOKEN_KEY);
   },
 
   setRefreshToken(token: string): void {
-    Cookies.set(REFRESH_TOKEN_KEY, token, {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      expires: 7, // 7 days
-    });
+    setStorage(REFRESH_TOKEN_KEY, token);
   },
 
   clearTokens(): void {
-    memoryAccessToken = null;
-    Cookies.remove(ACCESS_TOKEN_KEY);
-    Cookies.remove(REFRESH_TOKEN_KEY);
+    removeStorage(ACCESS_TOKEN_KEY);
+    removeStorage(REFRESH_TOKEN_KEY);
   },
 
   hasTokens(): boolean {
     return !!(this.getAccessToken() || this.getRefreshToken());
   },
 };
+

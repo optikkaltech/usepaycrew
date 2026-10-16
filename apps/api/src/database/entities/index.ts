@@ -7,3 +7,5 @@ export * from './ledger-entry.entity';
 export * from './payment.entity';
 export * from './contract.entity';
 export * from './audit-log.entity';
+export * from './subscription-plan.entity';
+export * from './company-wallet.entity';

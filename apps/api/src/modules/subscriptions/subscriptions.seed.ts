@@ -1,0 +1,47 @@
+import { SubscriptionPlan } from '@paycrew/shared-types';
+import { SubscriptionPlanEntity } from '../../database/entities/subscription-plan.entity';
+
+export const DEFAULT_SUBSCRIPTION_PLANS: Partial<SubscriptionPlanEntity>[] = [
+  {
+    code: SubscriptionPlan.FREE,
+    name: 'Free Starter',
+    badge: 'Free Forever',
+    baseWorkers: 3,
+    basePriceNgn: 0,
+    basePriceUsd: 0,
+    extraWorkerRateNgn: 0,
+    extraWorkerRateUsd: 0,
+    description: 'Perfect for small teams getting started with crypto payroll.',
+    features: 'Up to 3 active contractor seats • No card required',
+    sortOrder: 0,
+    isRecommended: false,
+  },
+  {
+    code: SubscriptionPlan.STARTER,
+    name: 'Growth Plan',
+    badge: 'Recommended',
+    baseWorkers: 10,
+    basePriceNgn: 15000,
+    basePriceUsd: 10,
+    extraWorkerRateNgn: 1500,
+    extraWorkerRateUsd: 1,
+    description: 'Ideal for remote teams paying up to 10 contractors.',
+    features: '10 contractor seats • Unlimited payroll runs • Extra seats: $1/mo',
+    sortOrder: 1,
+    isRecommended: true,
+  },
+  {
+    code: SubscriptionPlan.GROWTH,
+    name: 'Scale Plan',
+    badge: 'Scaling Teams',
+    baseWorkers: 50,
+    basePriceNgn: 45000,
+    basePriceUsd: 30,
+    extraWorkerRateNgn: 1500,
+    extraWorkerRateUsd: 1,
+    description: 'Designed for scaling companies requiring dual controls.',
+    features: '50 contractor seats • Dual Maker-Checker approvals • Priority liquidity',
+    sortOrder: 2,
+    isRecommended: false,
+  },
+];

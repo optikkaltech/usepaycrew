@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AppStrings, MoonIcon, SunIcon } from '@/assets';
 import {
   useTheme,
@@ -17,15 +17,30 @@ import { BillingStep } from './_components/BillingStep';
 import { CompleteStep } from './_components/CompleteStep';
 import { OnboardingStepper } from './_components/OnboardingStepper';
 
-export default function CompanyOnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isDark, toggleTheme, mounted } = useTheme();
   const [activeStep, setActiveStep] = useState<'PROFILE' | 'COMPLIANCE' | 'BILLING' | 'COMPLETED'>('PROFILE');
+  const processedPaymentRef = useRef<string | null>(null);
 
   const { data: statusData, isLoading } = useCompanyOnboardingStatus((step) => setActiveStep(step));
   const profileMutation = useSaveCompanyProfile(() => setActiveStep('COMPLIANCE'));
   const complianceMutation = useSaveCompanyCompliance(() => setActiveStep('BILLING'));
   const billingMutation = useCompleteCompanyBilling(() => setActiveStep('COMPLETED'));
+
+  // Handle returning from checkout redirect
+  useEffect(() => {
+    const status = searchParams.get('status') || searchParams.get('payment');
+    const ref = searchParams.get('ref');
+    const plan = searchParams.get('plan') || 'STARTER';
+
+    if (status === 'success' && ref && processedPaymentRef.current !== ref) {
+      processedPaymentRef.current = ref;
+      window.history.replaceState({}, '', window.location.pathname);
+      billingMutation.mutate({ plan, method: 'CARD' });
+    }
+  }, [searchParams, billingMutation]);
 
   if (isLoading) {
     return (
@@ -86,6 +101,7 @@ export default function CompanyOnboardingPage() {
 
         {activeStep === 'BILLING' && (
           <BillingStep
+            companyCountry={statusData?.company?.country}
             onSubmit={async (plan, method) => billingMutation.mutate({ plan, method })}
             isLoading={billingMutation.isPending}
           />
@@ -99,5 +115,19 @@ export default function CompanyOnboardingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CompanyOnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center p-4 bg-background">
+          <p className="text-body-md text-muted-foreground">{AppStrings.common.loading}</p>
+        </div>
+      }
+    >
+      <OnboardingContent />
+    </Suspense>
   );
 }

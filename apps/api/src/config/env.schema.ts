@@ -76,6 +76,9 @@ export const envSchema = z.object({
   // Blockchain RPC Rails
   BASE_RPC_URL: z.string().default('https://mainnet.base.org'),
   TRON_RPC_URL: z.string().default('https://api.trongrid.io'),
+
+  // Bot Protection (Cloudflare Turnstile)
+  CLOUDFLARE_TURNSTILE_SECRET_KEY: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
