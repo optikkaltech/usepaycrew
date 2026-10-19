@@ -10,9 +10,10 @@ export interface CompanyProfileFormValues {
 }
 
 export interface CompanyComplianceFormValues {
-  directorName: string;
-  directorBvnOrNin: string;
-  documentType: string;
+  directorName?: string;
+  directorBvnOrNin?: string;
+  documentType?: string;
+  skip?: boolean;
 }
 
 export interface CompanyBillingFormValues {

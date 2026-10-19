@@ -16,12 +16,18 @@ export class QuidaxRampProvider implements IRampProvider {
 
   private readonly rampBaseUrl = process.env.QUIDAX_RAMP_BASE_URL || 'https://ramp-be.quidax.io';
   private readonly rampPrivateKey = process.env.QUIDAX_RAMP_PRIVATE_KEY || '';
-  private readonly rampWebhookSecret =
-    process.env.QUIDAX_RAMP_WEBHOOK_SECRET || process.env.QUIDAX_WEBHOOK_SECRET || 'test_quidax_secret';
+  private readonly rampWebhookSecret = process.env.QUIDAX_RAMP_WEBHOOK_SECRET || process.env.QUIDAX_WEBHOOK_SECRET || 'test_quidax_secret';
 
-  private readonly networkMap: Record<string, string> = {
-    TRON: 'trc20', POLYGON: 'polygon', BASE: 'base', ETHEREUM: 'erc20', BSC: 'bep20', SOLANA: 'solana',
-  };
+  private normalizeNetwork(net: string): { quidaxNet: string; envKey: string } {
+    const u = (net || '').toUpperCase();
+    if (u.includes('TRON') || u.includes('TRC')) return { quidaxNet: 'trc20', envKey: 'TRON' };
+    if (u.includes('BNB') || u.includes('BEP') || u.includes('BSC')) return { quidaxNet: 'bep20', envKey: 'BNB' };
+    if (u.includes('POLYGON') || u.includes('MATIC')) return { quidaxNet: 'polygon', envKey: 'POLYGON' };
+    if (u.includes('ETH') || u.includes('ERC')) return { quidaxNet: 'erc20', envKey: 'ETHEREUM' };
+    if (u.includes('BASE')) return { quidaxNet: 'base', envKey: 'BASE' };
+    if (u.includes('SOL')) return { quidaxNet: 'solana', envKey: 'SOLANA' };
+    return { quidaxNet: (net || 'trc20').toLowerCase(), envKey: u.replace(/[^A-Z0-9]/g, '_') };
+  }
 
   private isMockMode(): boolean {
     return !this.rampPrivateKey || this.rampPrivateKey.startsWith('sk_test_quidax_ramp_key');
@@ -30,16 +36,17 @@ export class QuidaxRampProvider implements IRampProvider {
   async getQuote(amount = '10', token = 'usdt', currency = 'ngn', network = 'bep20'): Promise<RampQuoteResult> {
     const qdxToken = token.toLowerCase();
     const qdxCurrency = currency.toLowerCase();
-    const qdxNetwork = this.networkMap[network.toUpperCase()] || network.toLowerCase();
+    const { quidaxNet } = this.normalizeNetwork(network);
+    const queryAmount = parseFloat(amount) < 10 ? '10' : amount;
 
     if (!this.isMockMode()) {
       try {
-        const url = `${this.rampBaseUrl}/api/v1/merchants/purchase_quotes/sell?token=${qdxToken}&currency=${qdxCurrency}&token_amount=${amount}&token_network=${qdxNetwork}`;
+        const url = `${this.rampBaseUrl}/api/v1/merchants/purchase_quotes/sell?token=${qdxToken}&currency=${qdxCurrency}&token_amount=${queryAmount}&token_network=${quidaxNet}`;
         const resp = await fetch(url, { headers: { 'x-private-key': this.rampPrivateKey, accept: 'application/json' } });
         const json = await resp.json();
         if (resp.ok && json.data?.to_amount) {
           const toAmountNum = parseFloat(json.data.to_amount);
-          const tokenAmountNum = parseFloat(amount);
+          const tokenAmountNum = parseFloat(queryAmount);
           const effectiveRate = tokenAmountNum > 0 ? toAmountNum / tokenAmountNum : toAmountNum;
           return { rate: Math.round(effectiveRate * 100) / 100, fee: json.data.fee || '50.0', toAmount: json.data.to_amount, source: 'Quidax Ramp Live Quote' };
         }
@@ -54,49 +61,52 @@ export class QuidaxRampProvider implements IRampProvider {
 
   async generateDepositAddress(currency: Currency, network = 'TRON'): Promise<DepositAddressResult> {
     const qdxCurrency = currency.toLowerCase();
-    const qdxNetwork = this.networkMap[network.toUpperCase()] || network.toLowerCase();
-    const secretKey = process.env.QUIDAX_SECRET_KEY || process.env.QUIDAX_RAMP_PRIVATE_KEY;
+    const { quidaxNet, envKey } = this.normalizeNetwork(network);
 
     const configuredAddress =
+      process.env[`QUIDAX_DEPOSIT_ADDRESS_${envKey}`] ||
       process.env[`QUIDAX_DEPOSIT_ADDRESS_${network.toUpperCase()}`] ||
       process.env.QUIDAX_DEPOSIT_WALLET_ADDRESS;
 
     if (configuredAddress) {
-      return { address: configuredAddress, network: qdxNetwork.toUpperCase() };
+      return { address: configuredAddress, network: quidaxNet.toUpperCase() };
     }
 
-    if (secretKey && !secretKey.startsWith('sk_test_quidax_ramp_key')) {
+    const candidateKeys = [
+      process.env.QUIDAX_PUBLIC_KEY,
+      process.env.QUIDAX_API_KEY,
+      process.env.QUIDAX_SECRET_KEY,
+    ].filter((k): k is string => Boolean(k && !k.startsWith('sk_test_') && !k.startsWith('sec_test_')));
+
+    for (const key of candidateKeys) {
       try {
-        const url = `https://openapi.quidax.io/exchange-open-api/api/v1/users/me/wallets/${qdxCurrency}/addresses?network=${qdxNetwork}`;
-        const resp = await fetch(url, {
+        const listUrl = `https://openapi.quidax.io/exchange-open-api/api/v1/users/me/wallets/${qdxCurrency}/addresses`;
+        const listResp = await fetch(listUrl, { headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' } });
+        const listJson = await listResp.json();
+        if (listResp.ok && Array.isArray(listJson.data)) {
+          const matched = listJson.data.find((a: any) =>
+            a.currency?.toLowerCase() === qdxCurrency &&
+            (!a.network || a.network.toLowerCase() === quidaxNet.toLowerCase())
+          );
+          if (matched?.address) return { address: matched.address, network: (matched.network || quidaxNet).toUpperCase() };
+        }
+
+        const postUrl = `https://openapi.quidax.io/exchange-open-api/api/v1/users/me/wallets/${qdxCurrency}/addresses?network=${quidaxNet}`;
+        const resp = await fetch(postUrl, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${secretKey}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+          headers: { Authorization: `Bearer ${key}`, Accept: 'application/json', 'Content-Type': 'application/json' },
         });
         const json = await resp.json();
         if (resp.ok && json.data?.address) {
-          return { address: json.data.address, network: qdxNetwork.toUpperCase() };
+          return { address: json.data.address, network: quidaxNet.toUpperCase() };
         }
-
-        const getUrl = `https://openapi.quidax.io/exchange-open-api/api/v1/users/me/wallets/${qdxCurrency}/address`;
-        const getResp = await fetch(getUrl, {
-          headers: { Authorization: `Bearer ${secretKey}`, Accept: 'application/json' },
-        });
-        const getJson = await getResp.json();
-        if (getResp.ok && getJson.data?.address) {
-          return { address: getJson.data.address, network: qdxNetwork.toUpperCase() };
-        }
-
-        const msg = json?.message || json?.data?.message || `Quidax HTTP ${resp.status}`;
-        throw new BadRequestException(`Quidax live wallet error: ${msg}. Please ensure your Quidax API key has wallet generation permissions.`);
       } catch (err: any) {
-        if (err instanceof BadRequestException) throw err;
-        this.logger.error(`Quidax live address error: ${err.message}`);
-        throw new BadRequestException(`Quidax address error: ${err.message}`);
+        this.logger.warn(`Quidax live address lookup failed: ${err.message}`);
       }
     }
 
     throw new BadRequestException(
-      `No live Quidax API key or deposit address configured for ${currency} (${network}). Please set QUIDAX_SECRET_KEY or QUIDAX_DEPOSIT_ADDRESS_${network.toUpperCase()} in your environment.`
+      `No live crypto wallet address configured for ${currency} on ${network} (${quidaxNet.toUpperCase()}). Please configure Quidax with live API credentials or set QUIDAX_DEPOSIT_ADDRESS_${envKey} in your environment.`
     );
   }
 
@@ -182,10 +192,7 @@ export class QuidaxRampProvider implements IRampProvider {
 
   verifyWebhook(payload: any, signature: string): boolean {
     if (!signature || !this.rampWebhookSecret) return true;
-    const computed = crypto
-      .createHmac('sha256', this.rampWebhookSecret)
-      .update(typeof payload === 'string' ? payload : JSON.stringify(payload))
-      .digest('hex');
-    return computed === signature;
+    const data = typeof payload === 'string' ? payload : JSON.stringify(payload);
+    return crypto.createHmac('sha256', this.rampWebhookSecret).update(data).digest('hex') === signature;
   }
 }

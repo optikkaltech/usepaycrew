@@ -34,8 +34,8 @@ export class WorkerAcceptInviteDto {
   token: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Password is required' })
-  password: string;
+  @IsOptional()
+  password?: string;
 }
 
 export class UpdateWorkerPreferencesDto {
@@ -43,3 +43,28 @@ export class UpdateWorkerPreferencesDto {
   autoCashoutEnabled: boolean;
 }
 
+export class UpdateWorkerDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @IsString()
+  @IsOptional()
+  role?: string;
+
+  @IsString()
+  @IsOptional()
+  payAmount?: string;
+
+  @IsEnum(Currency, { message: 'Invalid pay currency' })
+  @IsOptional()
+  payCurrency?: Currency;
+
+  @IsEnum(PayFrequency, { message: 'Invalid pay frequency' })
+  @IsOptional()
+  payFrequency?: PayFrequency;
+}

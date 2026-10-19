@@ -58,6 +58,8 @@ export class SubscriptionsService implements OnModuleInit {
       priceFormatted: isNg ? `₦${Number(p.basePriceNgn).toLocaleString()}` : `$${Number(p.basePriceUsd)} USD`,
       priceSubtitle: isNg ? `($${Number(p.basePriceUsd)} USD / mo)` : `(≈ ${Number(p.basePriceUsd)} USDT)`,
       basePrice: isNg ? Number(p.basePriceNgn) : Number(p.basePriceUsd),
+      basePriceNgn: Number(p.basePriceNgn),
+      basePriceUsd: Number(p.basePriceUsd),
       currency: isNg ? 'NGN' : 'USD',
       description: p.description,
       features: p.features,
@@ -139,7 +141,11 @@ export class SubscriptionsService implements OnModuleInit {
       return { reference: ref, amount, currency, paymentMethod: dto.paymentMethod, checkoutUrl };
     }
 
-    const ramp = this.rampFactory.getProvider(company.activeRampProvider || RampProviderType.QUIDAX);
+    const rampType =
+      company.activeRampProvider && company.activeRampProvider !== RampProviderType.MOCK
+        ? company.activeRampProvider
+        : RampProviderType.QUIDAX;
+    const ramp = this.rampFactory.getProvider(rampType);
     const network = dto.network || 'TRON';
     const deposit = await ramp.generateDepositAddress(Currency.USDT, network);
 

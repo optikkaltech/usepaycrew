@@ -9,6 +9,7 @@
 
   :root {
     /* ── Light Mode Base (Default) ── */
+    color-scheme: light;
     --font-heading: var(--font-inter);
     --font-body: var(--font-inter);
 
@@ -36,8 +37,8 @@
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
 
-    --border: #e2e8f0;
-    --input: #e2e8f0;
+    --border: rgba(0, 0, 0, 0.08);
+    --input: rgba(0, 0, 0, 0.08);
     --ring: #06D6A0;
 
     --brand-brunswick: #0C4137;
@@ -67,6 +68,7 @@
 
   /* ── Dark Mode Override (.dark class) ── */
   .dark {
+    color-scheme: dark;
     --background: #08090b;
     --foreground: #f4f5f7;
 
@@ -91,8 +93,8 @@
     --destructive: #f87171;
     --destructive-foreground: #ffffff;
 
-    --border: rgba(255, 255, 255, 0.07);
-    --input: rgba(255, 255, 255, 0.07);
+    --border: rgba(255, 255, 255, 0.08);
+    --input: rgba(255, 255, 255, 0.08);
     --ring: #06D6A0;
 
     --brand-brunswick: #0C4137;
@@ -116,6 +118,26 @@
     --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
     --shadow-brand: 0 8px 24px -4px rgba(6, 214, 160, 0.15);
     --shadow-glow: 0 0 25px -2px rgba(6, 214, 160, 0.15);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+  }
+
+  select {
+    color-scheme: light dark;
+    background-color: var(--card);
+    color: var(--foreground);
+  }
+
+  select option {
+    background-color: var(--card);
+    color: var(--foreground);
   }
 }
 

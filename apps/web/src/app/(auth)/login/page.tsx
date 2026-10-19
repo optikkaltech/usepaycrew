@@ -2,18 +2,18 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { EyeIcon, EyeOffIcon } from '@/assets';
+import { EyeIcon, EyeOffIcon, BuildingIcon, UserIcon, Loader2Icon } from '@/assets';
 import { useToast, useGoogleAuth, useLogin } from '@/hooks';
 import { normalizeError } from '@/utils';
+import { Tabs } from '@/components/ui/Tabs';
 import { AuthShell } from '../_components/AuthShell';
 import { AuthSocialButtons } from '../_components/AuthSocialButtons';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid work email'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   twoFactorToken: z.string().optional(),
 });
@@ -21,18 +21,15 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginForm() {
-  const router = useRouter();
   const toast = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [requires2fa, setRequires2fa] = useState(false);
+  const [authType, setAuthType] = useState<string>('company');
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const { initiateGoogleAuth, isGoogleLoading } = useGoogleAuth('/login');
   const loginMutation = useLogin();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -40,36 +37,53 @@ function LoginForm() {
 
   const onSubmit = (values: LoginFormValues) => {
     loginMutation.mutate(values, {
+      onSuccess: () => setIsRedirecting(true),
       onError: (err) => {
+        setIsRedirecting(false);
         const norm = normalizeError(err);
-        if (norm.message.includes('Two-factor') || norm.message.includes('2FA')) {
-          setRequires2fa(true);
-        }
+        if (norm.message.includes('Two-factor') || norm.message.includes('2FA')) setRequires2fa(true);
         toast.error(norm.message);
       },
     });
   };
 
+  const isCompany = authType === 'company';
+
   return (
     <AuthShell showcaseHeadline="One Click Away from Effortless Stablecoin Payroll">
-      <div className="mb-6">
+      <div className="mb-4">
+        {/* Role Split Selector */}
+        <div className="mb-6">
+          <Tabs
+            tabs={[
+              { id: 'company', label: 'Sign in as Company', icon: BuildingIcon },
+              { id: 'contractor', label: 'Sign in as Contractor', icon: UserIcon },
+            ]}
+            activeTab={authType}
+            onChange={(tabId) => setAuthType(tabId)}
+            fullWidth
+          />
+        </div>
+
         <h1 className="text-display-xs sm:text-display-sm font-heading font-semibold text-foreground">
-          Welcome Back
+          {isCompany ? 'Company Sign In' : 'Contractor Sign In'}
         </h1>
-        <p className="mt-1.5 text-body-xs text-muted-foreground">
-          Enter your credentials to access your PayCrew dashboard.
+        <p className="mt-1 text-body-xs text-muted-foreground">
+          {isCompany
+            ? 'Access your corporate treasury, team roster, and payroll runs.'
+            : 'Access your earnings, withdraw to bank, or hold your balance.'}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-label-sm font-medium text-foreground mb-1">
-            Work Email
+            {isCompany ? 'Work Email' : 'Contractor Email'}
           </label>
           <input
             {...register('email')}
             type="email"
-            placeholder="alex@acme.com"
+            placeholder={isCompany ? 'alex@acme.com' : 'talent@contractor.com'}
             disabled={isSubmitting || isGoogleLoading}
             className="w-full min-h-[44px] px-3.5 text-body-sm bg-card border border-border text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
           />
@@ -129,10 +143,19 @@ function LoginForm() {
 
         <button
           type="submit"
-          disabled={isSubmitting || isGoogleLoading}
-          className="w-full min-h-[44px] mt-2 bg-primary text-primary-foreground text-label-sm font-semibold rounded-lg hover:opacity-90 transition shadow-brand disabled:opacity-50 flex items-center justify-center cursor-pointer"
+          disabled={isSubmitting || isGoogleLoading || isRedirecting}
+          className="w-full min-h-[44px] mt-2 bg-primary text-primary-foreground text-label-sm font-semibold rounded-lg hover:opacity-90 transition shadow-brand disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
         >
-          {isSubmitting ? 'Signing in...' : 'Sign in'}
+          {isSubmitting || isRedirecting ? (
+            <>
+              <Loader2Icon className="h-4 w-4 animate-spin text-primary-foreground" />
+              <span>{isRedirecting ? 'Launching portal...' : 'Signing in...'}</span>
+            </>
+          ) : isCompany ? (
+            'Sign in to Company'
+          ) : (
+            'Sign in to Portal'
+          )}
         </button>
       </form>
 
@@ -145,12 +168,19 @@ function LoginForm() {
         </span>
       </div>
 
-      <AuthSocialButtons onGoogleClick={initiateGoogleAuth} isSubmitting={isSubmitting || isGoogleLoading} />
+      <AuthSocialButtons
+        onGoogleClick={() => initiateGoogleAuth(isCompany ? 'COMPANY_OWNER' : 'WORKER')}
+        isSubmitting={isSubmitting || isGoogleLoading}
+      />
 
       <div className="mt-6 text-center text-caption text-muted-foreground">
         Don&apos;t have an account?{' '}
-        <Link href="/register" prefetch={true} className="font-bold text-foreground hover:underline">
-          Sign Up
+        <Link
+          href={isCompany ? '/register' : '/register?role=contractor'}
+          prefetch={true}
+          className="font-bold text-foreground hover:underline"
+        >
+          {isCompany ? 'Sign Up as Company' : 'Register as Contractor'}
         </Link>
       </div>
     </AuthShell>

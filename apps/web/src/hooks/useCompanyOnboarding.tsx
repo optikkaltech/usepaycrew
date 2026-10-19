@@ -43,8 +43,12 @@ export function useSaveCompanyCompliance(onSuccessCallback?: () => void) {
 
   return useMutation({
     mutationFn: (values: CompanyComplianceFormValues) => OnboardingService.saveCompliance(values),
-    onSuccess: () => {
-      toast.success('Director KYB verified successfully');
+    onSuccess: (_, variables) => {
+      if (variables?.skip) {
+        toast.info('Compliance deferred. Proceeding to billing.');
+      } else {
+        toast.success('Director compliance verified successfully');
+      }
       queryClient.invalidateQueries({ queryKey: ['companyOnboardingStatus'] });
       onSuccessCallback?.();
     },

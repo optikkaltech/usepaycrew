@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Body, Query, UseGuards, Req } from '@nestjs/common';
 import { LedgerService } from './ledger.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Currency, LedgerCategory, LedgerEntryType } from '@paycrew/shared-types';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Currency, LedgerCategory, LedgerEntryType, UserRole } from '@paycrew/shared-types';
 
 @Controller('ledger')
 @UseGuards(JwtAuthGuard)
@@ -27,6 +29,8 @@ export class LedgerController {
   }
 
   @Post('deposit')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PLATFORM_ADMIN)
   async recordDeposit(
     @Req() req: any,
     @Body() body: { amount: string; currency: Currency; reference: string },
@@ -43,5 +47,11 @@ export class LedgerController {
       description: `Funding deposit via ${body.reference}`,
     });
     return { success: true, data: entry };
+  }
+
+  @Get('company-entries')
+  async getCompanyEntries(@Req() req: any) {
+    const data = await this.ledgerService.getCompanyEntries(req.user.companyId);
+    return { success: true, data };
   }
 }

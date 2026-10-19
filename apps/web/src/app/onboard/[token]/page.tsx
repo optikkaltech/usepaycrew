@@ -1,52 +1,52 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import {
-  AppStrings,
-  FileCheckIcon,
-  ShieldCheckIcon,
-} from '@/assets';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import Link from 'next/link';
+import { AppStrings, SunIcon, MoonIcon } from '@/assets';
 import { Card } from '@/components/ui/Card';
-import { http } from '@/services';
-import { useToast } from '@/hooks';
-import { formatCurrency, normalizeError } from '@/utils';
-
-const onboardSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  typedSignature: z.string().min(2, 'Please type your full legal name to sign'),
-});
-
-type OnboardFormValues = z.infer<typeof onboardSchema>;
+import { http, TokenService } from '@/services';
+import { useToast, useTheme } from '@/hooks';
+import { normalizeError } from '@/utils';
+import { KycCheckType } from '@paycrew/shared-types';
+import { OnboardStepper, OnboardStep } from './_components/OnboardStepper';
+import { ContractStep, ContractFormValues } from './_components/ContractStep';
+import { KycStep } from './_components/KycStep';
+import { BankStep } from './_components/BankStep';
+import { OnboardCompleteStep } from './_components/OnboardCompleteStep';
 
 export default function OnboardWorkerPage({ params }: { params: Promise<{ token: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
   const toast = useToast();
-  const [step, setStep] = useState<'CONTRACT' | 'DONE'>('CONTRACT');
+  const { isDark, toggleTheme, mounted } = useTheme();
+
+  const [step, setStep] = useState<OnboardStep>('CONTRACT');
+  const [workerState, setWorkerState] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const { data: worker, isLoading, error } = useQuery({
     queryKey: ['workerInvite', resolvedParams.token],
     queryFn: () => http.get(`/workers/invite/${resolvedParams.token}`),
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<OnboardFormValues>({
-    resolver: zodResolver(onboardSchema),
-  });
+  const activeWorker = workerState || worker;
+
+  useEffect(() => {
+    if (worker) {
+      if (worker.status === 'ACTIVE') {
+        setStep('DONE');
+      } else if (worker.status === 'ONBOARDING' || worker.contracts?.[0]?.status === 'SIGNED') {
+        setStep(worker.hasVerifiedKyc ? 'BANK' : 'KYC');
+      }
+    }
+  }, [worker]);
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center p-4 bg-background">
         <p className="text-body-md text-muted-foreground">{AppStrings.common.loading}</p>
       </div>
     );
@@ -54,8 +54,8 @@ export default function OnboardWorkerPage({ params }: { params: Promise<{ token:
 
   if (error || !worker) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="max-w-md text-center p-6">
+      <div className="flex min-h-screen items-center justify-center p-4 bg-background">
+        <Card className="max-w-md text-center p-6 border-border">
           <p className="text-display-sm text-destructive">Invalid or Expired Link</p>
           <p className="mt-2 text-body-sm text-muted-foreground">
             This invitation link is no longer valid or has already been used. Please contact your employer.
@@ -65,85 +65,133 @@ export default function OnboardWorkerPage({ params }: { params: Promise<{ token:
     );
   }
 
-  const contract = worker.contracts?.[0];
-
-  const onSubmit = async (values: OnboardFormValues) => {
+  const handleContractSubmit = async (values: ContractFormValues) => {
     try {
+      setIsSubmitting(true);
       const onboardRes = await http.post('/workers/accept-invite', {
         token: resolvedParams.token,
         password: values.password,
       });
 
+      if (onboardRes?.token) {
+        TokenService.setAccessToken(onboardRes.token);
+      }
+      setWorkerState(onboardRes.worker || worker);
+
+      const contract = worker.contracts?.[0];
       if (contract?.id) {
         await http.post(`/contracts/${contract.id}/sign`, {
           typedName: values.typedSignature,
         });
       }
 
-      toast.success('Account activated & contract signed successfully!');
-      setStep('DONE');
-      setTimeout(() => {
-        router.push(`/worker/${onboardRes.worker.id}`);
-      }, 1500);
+      toast.success('Contract signed and account created');
+      setStep('KYC');
     } catch (err) {
       toast.error(normalizeError(err).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleKycSubmit = async (checkType: KycCheckType, identifier: string) => {
+    try {
+      setIsSubmitting(true);
+      const workerId = activeWorker.id;
+      await http.post(`/kyc/${workerId}/submit`, { checkType, identifier });
+      toast.success('Identity verified with Prembly KYC');
+      setStep('BANK');
+    } catch (err) {
+      toast.error(normalizeError(err).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBankSubmit = async (autoCashout: boolean, bankData?: any, existingMethodId?: string) => {
+    try {
+      setIsSubmitting(true);
+      const workerId = activeWorker.id;
+      if (existingMethodId) {
+        await http.post(`/payout-methods/${workerId}/link-existing`, { existingMethodId });
+      } else if (bankData) {
+        await http.post(`/payout-methods/${workerId}/bank`, bankData);
+      }
+      await http.patch(`/workers/${workerId}/preferences`, { autoCashoutEnabled: autoCashout });
+      toast.success('Payout preference configured');
+      setStep('DONE');
+    } catch (err) {
+      toast.error(normalizeError(err).message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 bg-secondary">
-      <div className="w-full max-w-xl">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-brand">
-            <FileCheckIcon className="h-6 w-6" />
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-[#fafbfc] text-[#0c1f1a] dark:bg-[#08090b] dark:text-[#f4f5f7] transition-colors duration-200 overflow-x-hidden">
+      <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[380px] w-[550px] rounded-full bg-brand-emerald/[0.08] dark:bg-brand-emerald/[0.12] blur-[120px]" />
+
+      <header className="w-full max-w-xl flex items-center justify-between mb-6 z-10">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-emerald text-black font-black text-caption shadow-[0_0_12px_rgba(6,214,160,0.4)]">
+            P
           </div>
-          <h1 className="text-display-sm text-foreground">Welcome to PayCrew, {worker.name}</h1>
-          <p className="mt-1 text-body-sm text-muted-foreground">
-            You&apos;ve been invited by <span className="font-semibold text-foreground">{worker.company?.name}</span> to receive stablecoin payroll
-          </p>
-        </div>
+          <span className="text-label-md font-bold text-foreground tracking-tight">
+            {AppStrings.appName}
+          </span>
+        </Link>
+        {mounted && (
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Toggle theme"
+          >
+            {isDark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+          </button>
+        )}
+      </header>
 
-        <Card variant="elevated" className="flex flex-col gap-5">
-          <div className="rounded-lg bg-secondary/60 p-4 border border-border">
-            <p className="text-caption text-muted-foreground">Agreed Compensation</p>
-            <p className="text-display-sm font-extrabold text-foreground">
-              {formatCurrency(worker.payAmount, worker.payCurrency)}
-            </p>
-            <p className="text-body-xs text-muted-foreground mt-0.5">Role: {worker.role} ({worker.payFrequency})</p>
-          </div>
+      <div className="w-full max-w-xl relative z-10">
+        <OnboardStepper currentStep={step} />
 
-          {contract && (
-            <div className="rounded-lg border border-border p-4 bg-background max-h-48 overflow-y-auto">
-              <div className="flex items-center gap-1.5 text-primary mb-2">
-                <ShieldCheckIcon className="h-4 w-4" />
-                <span className="text-label-sm font-bold">{contract.title}</span>
-              </div>
-              <p className="text-body-xs text-muted-foreground whitespace-pre-line font-mono">{contract.content}</p>
-            </div>
-          )}
+        {step === 'CONTRACT' && (
+          <ContractStep
+            worker={worker}
+            onSubmit={handleContractSubmit}
+            isLoading={isSubmitting}
+          />
+        )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            <Input
-              label="Set Your Password"
-              type="password"
-              placeholder="••••••••"
-              error={errors.password?.message}
-              {...register('password')}
-            />
+        {step === 'KYC' && (
+          <KycStep
+            hasVerifiedKyc={activeWorker.hasVerifiedKyc}
+            onSubmit={handleKycSubmit}
+            onSkip={() => setStep('BANK')}
+            isLoading={isSubmitting}
+          />
+        )}
 
-            <Input
-              label="Type Full Legal Name (Electronic Signature)"
-              placeholder={worker.name}
-              hint="By typing your name, you agree to the independent contractor agreement."
-              error={errors.typedSignature?.message}
-              {...register('typedSignature')}
-            />
+        {step === 'BANK' && (
+          <BankStep
+            workerId={activeWorker.id}
+            existingPayoutMethods={activeWorker.existingPayoutMethods}
+            onComplete={handleBankSubmit}
+            isLoading={isSubmitting}
+          />
+        )}
 
-            <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-              Accept &amp; Sign Agreement
-            </Button>
-          </form>
-        </Card>
+        {step === 'DONE' && (
+          <OnboardCompleteStep
+            workerName={activeWorker.name}
+            companyName={activeWorker.company?.name || 'Your Company'}
+            isLoading={isNavigating}
+            onGoToDashboard={() => {
+              setIsNavigating(true);
+              router.push(`/worker/${activeWorker.id}`);
+            }}
+          />
+        )}
       </div>
     </div>
   );

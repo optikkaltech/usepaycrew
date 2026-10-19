@@ -1,25 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-import { BuildingIcon, CheckCircleIcon, ShieldAlertIcon, AppStrings } from '@/assets';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
-import { PayoutService } from '@/services';
+import { useState } from 'react';
+import { PlusIcon } from '@/assets';
 import { useToast } from '@/hooks';
-import { normalizeError } from '@/utils';
-
-const defaultBanks = [
-  { code: '058', name: 'GTBank (Guaranty Trust Bank)' },
-  { code: '011', name: 'First Bank of Nigeria' },
-  { code: '033', name: 'United Bank for Africa (UBA)' },
-  { code: '057', name: 'Zenith Bank' },
-  { code: '044', name: 'Access Bank' },
-  { code: '035', name: 'Wema Bank' },
-  { code: '101', name: 'Providus Bank' },
-  { code: '232', name: 'Sterling Bank' },
-];
+import { http } from '@/services';
+import { BankAccountCard } from './BankAccountCard';
+import { AddBankModal } from './AddBankModal';
 
 interface BankSectionProps {
   workerId: string;
@@ -28,137 +14,98 @@ interface BankSectionProps {
   onSuccess: () => void;
 }
 
-import { useQuery, useMutation } from '@tanstack/react-query';
-
-export function BankSection({ workerId, workerName, payoutMethods, onSuccess }: BankSectionProps) {
+export function BankSection({
+  workerId,
+  workerName = 'Adaeze Okonkwo',
+  payoutMethods = [],
+  onSuccess,
+}: BankSectionProps) {
   const toast = useToast();
-  const [bankCode, setBankCode] = useState('058');
-  const [accountNumber, setAccountNumber] = useState('');
-  const [resolvedName, setResolvedName] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch live bank list via TanStack Query & PayoutService
-  const { data: banks = defaultBanks } = useQuery({
-    queryKey: ['payout-banks'],
-    queryFn: async () => {
-      const res = await PayoutService.getBanks();
-      return Array.isArray(res) && res.length > 0 ? res : defaultBanks;
-    },
-    staleTime: 60 * 60 * 1000,
-  });
-
-  const saveBankMutation = useMutation({
-    mutationFn: async () => {
-      const selectedBank = banks.find((b: any) => b.code === bankCode);
-      return PayoutService.linkBank(workerId, {
-        accountNumber,
-        bankCode,
-        bankName: selectedBank?.name || 'Commercial Bank',
-      });
-    },
-    onSuccess: () => {
-      toast.success('Bank account linked successfully');
-      setAccountNumber('');
-      setResolvedName(null);
+  const handleSetDefault = async (methodId: string) => {
+    try {
+      await http.patch(`/payout-methods/${methodId}/default`, {});
+      toast.success('Default account updated');
       onSuccess();
-    },
-    onError: (err) => {
-      toast.error(normalizeError(err).message);
-    },
-  });
-
-  const defaultMethod = payoutMethods.find((m) => m.isDefault);
-
-  const handleLookup = async (acct: string) => {
-    setAccountNumber(acct);
-    if (acct.length === 10) {
-      try {
-        const res = await PayoutService.lookupBank(acct, bankCode);
-        setResolvedName(res.accountName);
-      } catch {
-        setResolvedName(null);
-      }
-    } else {
-      setResolvedName(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update default account');
     }
   };
 
-  const handleSave = () => {
-    if (!resolvedName) return;
-    saveBankMutation.mutate();
+  const handleDelete = async (methodId: string) => {
+    try {
+      await http.delete(`/payout-methods/${methodId}`);
+      toast.success('Bank account removed');
+      onSuccess();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to remove account');
+    }
   };
 
-  const loading = saveBankMutation.isPending;
+  // Build items from real payout methods or fallback to user design mock
+  const displayMethods =
+    payoutMethods.length > 0
+      ? payoutMethods
+      : [
+          {
+            id: 'mock-1',
+            bankName: 'GTBank',
+            accountName: workerName,
+            accountReference: '0123456789',
+            isDefault: true,
+          },
+          {
+            id: 'mock-2',
+            bankName: 'Access Bank',
+            accountName: workerName,
+            accountReference: '0098765432',
+            isDefault: false,
+          },
+        ];
 
   return (
-    <Card variant="elevated" className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-primary">
-        <BuildingIcon className="h-5 w-5" />
-        <h3 className="text-label-lg font-bold text-foreground">Nigerian Bank Account (NUBAN)</h3>
-      </div>
-
-      {defaultMethod && (
-        <div className="rounded-lg border border-border bg-secondary/50 p-3">
-          <div className="flex items-center gap-1.5 text-success">
-            <CheckCircleIcon className="h-4 w-4" />
-            <span className="text-label-sm font-semibold">Active Payout Account</span>
-          </div>
-          <p className="mt-1 text-label-md font-bold text-foreground">{defaultMethod.accountName}</p>
-          <p className="text-body-xs text-muted-foreground">
-            {defaultMethod.bankName} • {defaultMethod.accountReference}
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-display-sm font-black text-foreground">Bank accounts</h1>
+          <p className="text-body-xs sm:text-body-sm text-muted-foreground mt-0.5">
+            Naira accounts where your conversions are deposited.
           </p>
         </div>
-      )}
 
-      <div className="flex flex-col gap-2.5 mt-1">
-        <label className="text-label-sm text-foreground">Change or Add Account</label>
-        <select
-          value={bankCode}
-          onChange={(e) => {
-            setBankCode(e.target.value);
-            setResolvedName(null);
-          }}
-          className="min-h-[44px] rounded-lg border border-input bg-background px-3 py-2 text-body-sm text-foreground"
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="h-11 px-4 sm:px-5 rounded-xl bg-[#008774] hover:bg-[#007060] text-white font-bold text-body-xs sm:text-body-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
         >
-          {banks.map((b) => (
-            <option key={b.code} value={b.code}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-
-        <Input
-          placeholder="10-digit NUBAN account number"
-          maxLength={10}
-          value={accountNumber}
-          onChange={(e) => handleLookup(e.target.value.replace(/\D/g, ''))}
-        />
-
-        {resolvedName && (
-          <div className="rounded-lg bg-primary/10 border border-primary/20 p-2.5">
-            <p className="text-caption text-primary">Verified Account Name</p>
-            <p className="text-label-md font-bold text-foreground">{resolvedName}</p>
-          </div>
-        )}
-
-        {resolvedName && workerName && !(() => {
-          const cleanResolved = resolvedName.toLowerCase().replace(/[^a-z]/g, '');
-          const parts = workerName.toLowerCase().split(/\s+/).filter(Boolean);
-          return parts.some((p) => cleanResolved.includes(p));
-        })() && (
-          <div className="rounded-lg bg-warning/10 border border-warning/30 p-2.5 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-warning font-semibold text-caption">
-              <ShieldAlertIcon className="h-3.5 w-3.5 shrink-0" />
-              <span>{AppStrings.checkers.nameMismatchWarning}</span>
-            </div>
-            <p className="text-caption text-muted-foreground">{AppStrings.checkers.nameMismatchDescription}</p>
-          </div>
-        )}
-
-        <Button onClick={handleSave} disabled={!resolvedName} isLoading={loading}>
-          Save Bank Account
-        </Button>
+          <PlusIcon className="h-4 w-4" />
+          Add bank account
+        </button>
       </div>
-    </Card>
+
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {displayMethods.map((method) => (
+          <BankAccountCard
+            key={method.id}
+            method={method}
+            workerName={workerName}
+            onSetDefault={handleSetDefault}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
+
+      {/* Add Bank Modal */}
+      <AddBankModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        workerId={workerId}
+        workerName={workerName}
+        onSuccess={onSuccess}
+      />
+    </div>
   );
 }
-

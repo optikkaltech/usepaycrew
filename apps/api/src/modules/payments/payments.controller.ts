@@ -65,6 +65,7 @@ export class PaymentsController {
     @Headers('x-quidax-signature') signature: string,
     @Body() payload: WebhookEventPayload,
   ) {
+    const isProduction = process.env.NODE_ENV === 'production';
     const secret =
       process.env.QUIDAX_RAMP_WEBHOOK_SECRET ||
       process.env.QUIDAX_WEBHOOK_SECRET ||
@@ -74,8 +75,10 @@ export class PaymentsController {
       .update(JSON.stringify(payload))
       .digest('hex');
 
-    if (signature && signature !== computedSignature) {
-      throw new UnauthorizedException('Invalid webhook signature');
+    if (isProduction || signature) {
+      if (!signature || signature !== computedSignature) {
+        throw new UnauthorizedException('Invalid or missing webhook signature');
+      }
     }
 
     const data = await this.paymentsService.handleWebhook(payload);

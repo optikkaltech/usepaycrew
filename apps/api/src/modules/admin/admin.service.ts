@@ -49,6 +49,13 @@ export class AdminService {
       await this.workerRepo.save(check.worker);
     }
 
+    await this.recordAudit({
+      action: `KYC_${dto.status}`,
+      entity: 'KYC_CHECK',
+      entityId: check.id,
+      details: { status: dto.status, reasonCode: dto.reasonCode, workerId: check.workerId },
+    });
+
     return saved;
   }
 
@@ -72,9 +79,17 @@ export class AdminService {
     payment.status = PaymentStatus.SUBMITTED;
     payment.failureReason = null;
     payment.providerReference = `qdx_retry_${Date.now()}`;
-    // Simulate immediate successful processing on retry
     payment.status = PaymentStatus.PAID;
-    return this.paymentRepo.save(payment);
+    const savedPayment = await this.paymentRepo.save(payment);
+
+    await this.recordAudit({
+      action: 'PAYMENT_RETRIED',
+      entity: 'PAYMENT',
+      entityId: payment.id,
+      details: { previousStatus: PaymentStatus.FAILED, newStatus: PaymentStatus.PAID },
+    });
+
+    return savedPayment;
   }
 
   async getAuditLogs(limit = 100): Promise<AuditLogEntity[]> {

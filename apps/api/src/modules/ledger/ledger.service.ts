@@ -160,4 +160,12 @@ export class LedgerService {
       description: `Worker withdrawal ${params.amount} ${params.currency}`,
     }, manager);
   }
+
+  async getCompanyEntries(companyId: string, limit = 20): Promise<LedgerEntryEntity[]> {
+    return this.ledgerRepo.find({
+      where: { companyId, accountType: 'COMPANY' },
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+  }
 }

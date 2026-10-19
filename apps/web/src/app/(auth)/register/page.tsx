@@ -2,57 +2,75 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CheckIcon, EyeIcon, EyeOffIcon } from '@/assets';
-import { useToast, useGoogleAuth, useRegister } from '@/hooks';
-import { normalizeError } from '@/utils';
+import { CheckIcon, EyeIcon, EyeOffIcon, BuildingIcon, UserIcon, Loader2Icon } from '@/assets';
+import { useGoogleAuth, useRegister } from '@/hooks';
+import { Tabs } from '@/components/ui/Tabs';
 import { AuthShell } from '../_components/AuthShell';
 import { AuthSocialButtons } from '../_components/AuthSocialButtons';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
-  companyName: z.string().min(2, 'Company name is required'),
-  email: z.string().email('Please enter a valid work email'),
+  companyName: z.string().min(2, 'Organization or professional role is required'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 function RegisterForm() {
+  const searchParams = useSearchParams();
+  const initialRole = searchParams.get('role') === 'contractor' ? 'contractor' : 'company';
+  const [roleType, setRoleType] = useState<string>(initialRole);
   const [showPassword, setShowPassword] = useState(false);
   const [sendUpdates, setSendUpdates] = useState(true);
-  const { initiateGoogleAuth, isGoogleLoading } = useGoogleAuth('/register', 'COMPANY_OWNER');
+
+  const isContractor = roleType === 'contractor';
+  const defaultRole = isContractor ? 'WORKER' : 'COMPANY_OWNER';
+  const { initiateGoogleAuth, isGoogleLoading } = useGoogleAuth('/register', defaultRole);
   const registerMutation = useRegister();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormValues>({
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
   });
 
   const loading = registerMutation.isPending || isGoogleLoading;
 
   const onSubmit = (values: RegisterFormValues) => {
-    registerMutation.mutate(values);
+    registerMutation.mutate(
+      { ...values, role: defaultRole } as any,
+      { onSuccess: () => setIsRedirecting(true), onError: () => setIsRedirecting(false) },
+    );
   };
 
   return (
     <AuthShell showcaseHeadline="One Click Away from Studio-Grade Payroll">
       <div className="mb-4">
-        <h1 className="text-display-xs sm:text-display-sm font-heading font-semibold text-foreground">
-          Create an Account
+        <Tabs
+          tabs={[
+            { id: 'company', label: 'Company Account', icon: BuildingIcon },
+            { id: 'contractor', label: 'Contractor Account', icon: UserIcon },
+          ]}
+          activeTab={roleType}
+          onChange={(id) => setRoleType(id)}
+          fullWidth
+        />
+        <h1 className="mt-4 text-display-xs sm:text-display-sm font-heading font-semibold text-foreground">
+          {isContractor ? 'Create Contractor Account' : 'Create Company Account'}
         </h1>
         <p className="mt-1 text-body-xs text-muted-foreground">
-          You are few moments away from getting started!
+          {isContractor
+            ? 'Receive salary in USDT/USDC and withdraw directly to local bank rails.'
+            : 'Automate global contractor payroll and instant treasury off-ramping.'}
         </p>
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-3 flex items-center gap-2">
         <button
           type="button"
           onClick={() => setSendUpdates(!sendUpdates)}
@@ -64,7 +82,7 @@ function RegisterForm() {
           <CheckIcon className="h-3 w-3 stroke-[3]" />
         </button>
         <span className="text-caption text-muted-foreground font-medium select-none">
-          Send me tips, updates and offers
+          Send me product updates and treasury notifications
         </span>
       </div>
 
@@ -83,10 +101,12 @@ function RegisterForm() {
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-foreground/80 mb-1">Company</label>
+            <label className="block text-[12px] font-medium text-foreground/80 mb-1">
+              {isContractor ? 'Professional Title / Skill' : 'Company Name'}
+            </label>
             <input
               type="text"
-              placeholder="Acme Tech Ltd"
+              placeholder={isContractor ? 'Software Engineer' : 'Acme Tech Ltd'}
               disabled={loading}
               className="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-body-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
               {...register('companyName')}
@@ -96,10 +116,12 @@ function RegisterForm() {
         </div>
 
         <div>
-          <label className="block text-[12px] font-medium text-foreground/80 mb-1">Email</label>
+          <label className="block text-[12px] font-medium text-foreground/80 mb-1">
+            {isContractor ? 'Contractor Email' : 'Work Email'}
+          </label>
           <input
             type="email"
-            placeholder="Enter your email"
+            placeholder={isContractor ? 'talent@contractor.com' : 'alex@acme.com'}
             disabled={loading}
             className="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-body-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             {...register('email')}
@@ -129,19 +151,21 @@ function RegisterForm() {
           {errors.password && <p className="mt-0.5 text-caption text-destructive">{errors.password.message}</p>}
         </div>
 
-        <p className="text-[11px] text-muted-foreground leading-snug pt-1">
-          By signing up, you accept PayCrew{' '}
-          <Link href="#" className="font-semibold text-foreground underline underline-offset-2 hover:text-primary">privacy policy</Link>
-          {' '}and{' '}
-          <Link href="#" className="font-semibold text-foreground underline underline-offset-2 hover:text-primary">terms of service</Link>.
-        </p>
-
         <button
           type="submit"
-          disabled={loading}
-          className="w-full rounded-xl bg-primary text-primary-foreground py-3 text-label-sm font-semibold transition-all shadow-brand hover:opacity-90 disabled:opacity-60 cursor-pointer"
+          disabled={loading || isRedirecting}
+          className="w-full rounded-xl bg-primary text-primary-foreground py-3 text-label-sm font-semibold transition-all shadow-brand hover:opacity-90 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
         >
-          {loading ? 'Creating account...' : 'Sign up'}
+          {loading || isRedirecting ? (
+            <>
+              <Loader2Icon className="h-4 w-4 animate-spin text-primary-foreground" />
+              <span>{isRedirecting ? 'Launching workspace...' : 'Creating account...'}</span>
+            </>
+          ) : isContractor ? (
+            'Sign up as Contractor'
+          ) : (
+            'Sign up as Company'
+          )}
         </button>
       </form>
 
@@ -152,7 +176,7 @@ function RegisterForm() {
         <span className="relative bg-card px-3 text-[11px] font-medium text-muted-foreground uppercase">or</span>
       </div>
 
-      <AuthSocialButtons onGoogleClick={initiateGoogleAuth} isSubmitting={loading} />
+      <AuthSocialButtons onGoogleClick={() => initiateGoogleAuth(defaultRole)} isSubmitting={loading} />
 
       <div className="mt-5 text-center text-caption text-muted-foreground">
         Already have an account?{' '}

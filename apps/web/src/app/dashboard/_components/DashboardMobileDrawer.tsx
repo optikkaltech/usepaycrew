@@ -6,6 +6,7 @@ import {
   AppStrings,
   LogOutIcon,
   XIcon,
+  ShieldIcon,
 } from '@/assets';
 import { DASHBOARD_NAV_ITEMS } from './sidebar.constants';
 
@@ -74,6 +75,22 @@ export function DashboardMobileDrawer({
             </Link>
           );
         })}
+
+        {user?.role === 'PLATFORM_ADMIN' && (
+          <Link
+            href="/admin"
+            onClick={onClose}
+            className={clsx(
+              'flex items-center gap-3 rounded-xl px-4 py-3 text-label-md transition-colors min-h-[44px] border border-brand-emerald/30',
+              pathname.startsWith('/admin')
+                ? 'bg-brand-emerald/15 text-brand-emerald font-semibold shadow-xs'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+            )}
+          >
+            <ShieldIcon className="h-5 w-5 text-brand-emerald" />
+            <span>Platform Admin</span>
+          </Link>
+        )}
       </nav>
 
       <div className="mt-auto pt-4 border-t border-border flex flex-col gap-3">

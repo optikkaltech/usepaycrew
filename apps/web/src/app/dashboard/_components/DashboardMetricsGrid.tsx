@@ -64,7 +64,7 @@ export function DashboardMetricsGrid({
         const content = (
           <Card
             key={item.title}
-            className="flex flex-col justify-between p-4 bg-card border border-border hover:border-foreground/20 transition-all shadow-xs h-full"
+            className="flex flex-col justify-between p-4 bg-card hover:border-foreground/20 transition-all shadow-xs h-full"
           >
             <div className="flex items-center justify-between gap-2 mb-3">
               <span className="text-caption text-muted-foreground font-medium line-clamp-1">

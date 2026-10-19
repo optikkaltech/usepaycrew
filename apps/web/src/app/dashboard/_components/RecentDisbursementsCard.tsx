@@ -27,9 +27,9 @@ export function RecentDisbursementsCard({
   const recentPayments = payments.slice(0, 5);
 
   return (
-    <Card className="flex flex-col bg-card/90 border-border p-5 shadow-xs">
+    <Card className="flex flex-col bg-card/90 p-5 shadow-xs">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-border/60">
+      <div className="flex items-center justify-between pb-4 border-b border-border">
         <div>
           <h2 className="text-label-lg font-bold text-foreground">
             Recent Payroll & Disbursements

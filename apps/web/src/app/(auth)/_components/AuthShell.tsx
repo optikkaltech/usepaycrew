@@ -37,7 +37,7 @@ export function AuthShell({ children, showcaseHeadline }: AuthShellProps) {
         <AuthShowcaseCard headline={showcaseHeadline} />
 
         {/* Right Authentication Form Column */}
-        <div className="flex flex-col justify-center px-6 py-10 sm:px-12 md:px-16 w-full max-w-md mx-auto">
+        <div className="flex flex-col justify-center px-5 py-8 sm:px-8 md:px-10 w-full max-w-[480px] mx-auto">
           {children}
         </div>
       </div>

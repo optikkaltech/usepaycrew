@@ -79,7 +79,7 @@ export function SearchableSelect({
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
         className={clsx(
-          'flex min-h-[42px] w-full items-center justify-between rounded-lg border bg-background px-3 py-2 text-left text-body-xs sm:text-body-sm transition-colors duration-150',
+          'flex min-h-[44px] w-full items-center justify-between rounded-lg border bg-background px-3 py-2 text-left text-body-xs sm:text-body-sm transition-colors duration-150',
           error
             ? 'border-destructive focus:border-destructive focus:ring-1 focus:ring-destructive'
             : isOpen

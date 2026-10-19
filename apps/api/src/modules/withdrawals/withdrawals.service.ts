@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { WorkerEntity, PayoutMethodEntity } from '../../database/entities';
+import * as argon2 from 'argon2';
 import { PayoutMethodType, Currency } from '@paycrew/shared-types';
 import { LedgerService } from '../ledger/ledger.service';
 import { BankingProviderFactory } from '../../providers/banking/banking.factory';
@@ -62,8 +63,18 @@ export class WithdrawalsService {
     });
     if (!pm) throw new NotFoundException('Payout method not found');
 
-    if (!dto.otpOrPin || dto.otpOrPin.length < 4) {
-      throw new BadRequestException('Valid OTP or security PIN is required to confirm withdrawal');
+    if (!dto.otpOrPin || dto.otpOrPin.length < 4 || dto.otpOrPin.length > 6) {
+      throw new BadRequestException('A valid 4 to 6-digit security PIN is required to confirm withdrawal');
+    }
+
+    if (worker.transactionPinHash) {
+      const isValid = await argon2.verify(worker.transactionPinHash, dto.otpOrPin).catch(() => false);
+      if (!isValid) {
+        throw new BadRequestException('Incorrect transaction PIN. Please try again.');
+      }
+    } else {
+      worker.transactionPinHash = await argon2.hash(dto.otpOrPin);
+      await this.workerRepo.save(worker);
     }
 
     const calc = this.calculateWithdrawal(dto.amount, dto.currency);

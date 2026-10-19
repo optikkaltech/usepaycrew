@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { env } from '../../config';
+import { buildContractorInviteHtml, ContractorInviteEmailProps } from './contractor-invite.template';
 
 export interface SendEmailOptions {
   to: string;
@@ -9,14 +10,8 @@ export interface SendEmailOptions {
   text?: string;
 }
 
-export interface ContractorInviteOptions {
+export interface ContractorInviteOptions extends ContractorInviteEmailProps {
   to: string;
-  contractorName: string;
-  companyName: string;
-  role: string;
-  payAmount: string;
-  payCurrency: string;
-  inviteUrl: string;
 }
 
 @Injectable()
@@ -67,33 +62,15 @@ export class MailerSendProvider {
   }
 
   async sendContractorInvite(opts: ContractorInviteOptions): Promise<boolean> {
-    const html = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #0c0d11; color: #f4f5f7; border-radius: 16px;">
-        <div style="margin-bottom: 24px;">
-          <span style="font-size: 20px; font-weight: bold; color: #06D6A0;">PayCrew</span>
-        </div>
-        <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 16px; color: #ffffff;">You've been invited to join ${opts.companyName}</h2>
-        <p style="font-size: 14px; line-height: 1.6; color: #8a8f98; margin-bottom: 24px;">
-          Hello ${opts.contractorName},<br/><br/>
-          ${opts.companyName} has invited you to receive your monthly compensation for the role of <strong>${opts.role}</strong> (${opts.payAmount} ${opts.payCurrency}) in stablecoins with instant local bank cashout.
-        </p>
-        <div style="margin: 32px 0;">
-          <a href="${opts.inviteUrl}" style="background-color: #06D6A0; color: #000000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
-            Accept Invitation &amp; Setup Cashout
-          </a>
-        </div>
-        <p style="font-size: 12px; color: #525866; margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
-          If the button doesn't work, copy this link into your browser: <br/>${opts.inviteUrl}
-        </p>
-      </div>
-    `;
+    const html = buildContractorInviteHtml(opts);
+    const expiresIn = opts.expiresIn || '7 days';
 
     return this.sendEmail({
       to: opts.to,
       toName: opts.contractorName,
       subject: `Invitation: Join ${opts.companyName} on PayCrew`,
       html,
-      text: `Hello ${opts.contractorName}, ${opts.companyName} invited you to receive payroll on PayCrew. Accept your invite: ${opts.inviteUrl}`,
+      text: `Hello ${opts.contractorName}, ${opts.companyName} invited you to receive payroll on PayCrew. This link expires in ${expiresIn}. Accept your invite: ${opts.inviteUrl}`,
     });
   }
 }

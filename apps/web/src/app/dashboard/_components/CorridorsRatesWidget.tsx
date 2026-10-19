@@ -14,8 +14,8 @@ export function CorridorsRatesWidget({ marketRate }: CorridorsRatesWidgetProps) 
   const ngnEquivalent = usdNum * marketRate;
 
   return (
-    <Card className="flex flex-col gap-4 bg-card/90 border-border p-4 sm:p-5 shadow-xs">
-      <div className="flex items-center justify-between pb-3 border-b border-border/60">
+    <Card className="flex flex-col gap-4 bg-card/90 p-4 sm:p-5 shadow-xs">
+      <div className="flex items-center justify-between pb-3 border-b border-border">
         <div>
           <h3 className="text-label-md font-bold text-foreground">
             Corridors & OTC Rails

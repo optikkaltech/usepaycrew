@@ -34,7 +34,7 @@ export class PaymentsService {
     try {
       const quidax = this.rampFactory.getProvider(RampProviderType.QUIDAX);
       if (quidax?.getQuote) {
-        const quote = await quidax.getQuote('1', 'usdt', 'ngn', 'bep20');
+        const quote = await quidax.getQuote('10', 'usdt', 'ngn', 'bep20');
         if (quote.rate > 0) return { pair, rate: quote.rate, source: quote.source };
       }
     } catch {

@@ -2,6 +2,8 @@ export interface UpdateCompanyDto {
   name?: string;
   registrationNumber?: string;
   country?: string;
+  activeRampProvider?: any;
+  activeKycProvider?: any;
 }
 
 export interface CreateCompanyWalletDto {

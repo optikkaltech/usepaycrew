@@ -1,5 +1,11 @@
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 import { Logger } from '@nestjs/common';
 import { EnvConfig, envSchema } from './env.schema';
+
+dotenv.config({ path: path.resolve(process.cwd(), 'apps/api/.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config();
 
 const logger = new Logger('EnvConfig');
 

@@ -1,24 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import clsx from 'clsx';
 import {
   AppStrings,
   CreditCardIcon,
   DownloadIcon,
   ZapIcon,
+  SearchIcon,
 } from '@/assets';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Tabs } from '@/components/ui/Tabs';
 import { http } from '@/services';
-import { formatCurrency, formatDate } from '@/utils';
+import { formatDate } from '@/utils';
 import { DisbursePaymentModal } from './_components/DisbursePaymentModal';
 import { BatchPayrollModal } from './_components/BatchPayrollModal';
+import { PayrollLedgerTable } from './_components/PayrollLedgerTable';
+
+const STATUS_TABS = [
+  { id: 'ALL', label: 'All Payments' },
+  { id: 'PAID', label: 'Completed' },
+  { id: 'PENDING', label: 'Pending' },
+  { id: 'FAILED', label: 'Failed' },
+];
 
 export default function PayrollPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [batchModalOpen, setBatchModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: payments = [], refetch } = useQuery({
     queryKey: ['payments'],
@@ -38,10 +49,23 @@ export default function PayrollPage() {
 
   const rate = rateData?.rate || 1540;
 
+  const filteredPayments = useMemo(() => {
+    return payments.filter((p: any) => {
+      if (statusFilter !== 'ALL' && p.status !== statusFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchName = (p.worker?.name || '').toLowerCase().includes(q);
+        const matchRef = (p.providerReference || p.idempotencyKey || '').toLowerCase().includes(q);
+        return matchName || matchRef;
+      }
+      return true;
+    });
+  }, [payments, statusFilter, searchQuery]);
+
   const exportCsv = () => {
-    if (payments.length === 0) return;
+    if (filteredPayments.length === 0) return;
     const headers = ['Date', 'Worker', 'Amount', 'Fee', 'Total', 'Status', 'Reference'];
-    const rows = payments.map((p: any) => [
+    const rows = filteredPayments.map((p: any) => [
       formatDate(p.createdAt),
       p.worker?.name || p.workerId,
       p.amount,
@@ -75,7 +99,7 @@ export default function PayrollPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="outline" onClick={exportCsv} disabled={payments.length === 0}>
+          <Button variant="outline" onClick={exportCsv} disabled={filteredPayments.length === 0}>
             <DownloadIcon className="mr-2 h-4 w-4" />
             {AppStrings.payments.exportCsv}
           </Button>
@@ -90,64 +114,26 @@ export default function PayrollPage() {
         </div>
       </div>
 
-      <Card variant="elevated" className="overflow-x-auto p-0">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-secondary/50 text-label-sm text-muted-foreground">
-              <th className="p-4">Date</th>
-              <th className="p-4">Contractor</th>
-              <th className="p-4">Amount</th>
-              <th className="p-4">Fee (1%)</th>
-              <th className="p-4">Total Charged</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Reference</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {payments.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-body-md text-muted-foreground">
-                  No payroll payments disbursed yet.
-                </td>
-              </tr>
-            ) : (
-              payments.map((p: any) => (
-                <tr key={p.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="p-4 text-body-sm text-muted-foreground">{formatDate(p.createdAt)}</td>
-                  <td className="p-4 text-label-md font-semibold text-foreground">
-                    {p.worker?.name || 'Worker'}
-                  </td>
-                  <td className="p-4 text-body-sm font-semibold text-foreground">
-                    {formatCurrency(p.amount, p.currency)}
-                  </td>
-                  <td className="p-4 text-body-sm text-muted-foreground">
-                    {formatCurrency(p.feeAmount, p.currency)}
-                  </td>
-                  <td className="p-4 text-body-sm font-bold text-foreground">
-                    {formatCurrency(p.totalCharged, p.currency)}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={clsx(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-semibold',
-                        p.status === 'PAID' && 'bg-success/15 text-success',
-                        p.status === 'SUBMITTED' && 'bg-brand-emerald/15 text-brand-emerald',
-                        p.status === 'PENDING' && 'bg-warning/15 text-warning',
-                        p.status === 'FAILED' && 'bg-destructive/15 text-destructive',
-                      )}
-                    >
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-caption font-mono text-muted-foreground truncate max-w-[140px]">
-                    {p.providerReference || p.idempotencyKey}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </Card>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Tabs
+          tabs={STATUS_TABS}
+          activeTab={statusFilter}
+          onChange={setStatusFilter}
+        />
+        <div className="w-full sm:w-72">
+          <Input
+            placeholder="Search contractor or reference..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            icon={<SearchIcon className="h-4 w-4 text-muted-foreground" />}
+          />
+        </div>
+      </div>
+
+      <PayrollLedgerTable
+        payments={filteredPayments}
+        onDisburseSingle={() => setModalOpen(true)}
+      />
 
       <DisbursePaymentModal
         isOpen={modalOpen}

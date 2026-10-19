@@ -14,6 +14,12 @@ export class CompaniesController {
     return { success: true, data };
   }
 
+  @Get('me')
+  async getMe(@Req() req: any) {
+    const data = await this.companiesService.getCompany(req.user.companyId);
+    return { success: true, data };
+  }
+
   @Get('funding-info')
   async getFundingInfo(@Req() req: any) {
     const data = await this.companiesService.getFundingInfo(req.user.companyId);
@@ -35,6 +41,12 @@ export class CompaniesController {
   @Patch('current')
   async updateCurrent(@Req() req: any, @Body() dto: UpdateCompanyDto) {
     const data = await this.companiesService.updateCompany(req.user.companyId, dto);
+    return { success: true, data };
+  }
+
+  @Patch('providers')
+  async updateProviders(@Req() req: any, @Body() dto: { activeRampProvider?: any; activeKycProvider?: any }) {
+    const data = await this.companiesService.updateProviders(req.user.companyId, dto);
     return { success: true, data };
   }
 }

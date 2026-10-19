@@ -22,4 +22,13 @@ export const PayoutService = {
   }) => {
     return http.post('/withdrawals/execute', payload);
   },
+  getMethods: async (workerId: string) => {
+    return http.get(`/payout-methods/${workerId}`);
+  },
+  setDefaultMethod: async (methodId: string) => {
+    return http.patch(`/payout-methods/${methodId}/default`, {});
+  },
+  deleteMethod: async (methodId: string) => {
+    return http.delete(`/payout-methods/${methodId}`);
+  },
 };

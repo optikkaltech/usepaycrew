@@ -51,14 +51,14 @@ export function BillingCardForm({ amountLabel, selectedPlan, onPay, isLoading }:
       </div>
 
       <div className="rounded-xl border border-border bg-card p-3.5 space-y-3">
-        <div className="flex items-center justify-between text-caption font-semibold text-muted-foreground border-b border-border/60 pb-2">
+        <div className="flex items-center justify-between text-caption font-semibold text-muted-foreground border-b border-border pb-2">
           <span>Supported Payment Channels</span>
           <span className="text-[10px] text-brand-emerald font-bold uppercase tracking-wider bg-brand-emerald/10 px-2 py-0.5 rounded">
             Live Gateway
           </span>
         </div>
 
-        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-secondary/30 border border-border/40 text-caption">
+        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-secondary/30 border border-border text-caption">
           <CreditCardIcon className="h-4 w-4 text-primary shrink-0" />
           <span className="text-foreground font-medium text-body-xs">
             Debit / Credit Cards (Mastercard, Visa, Verve)

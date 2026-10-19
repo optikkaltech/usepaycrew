@@ -20,7 +20,7 @@ export function ExecutiveTreasuryCard({
   return (
     <Card
       variant="elevated"
-      className="relative overflow-hidden bg-card/90 backdrop-blur-md border border-border p-5 sm:p-6 shadow-sm"
+      className="relative overflow-hidden bg-card/90 backdrop-blur-md p-5 sm:p-6 shadow-sm"
     >
       <div className="pointer-events-none absolute -right-8 -top-8 h-[160px] w-[240px] rounded-full bg-brand-emerald/[0.07] dark:bg-brand-emerald/[0.12] blur-[50px]" />
 

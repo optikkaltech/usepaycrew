@@ -22,21 +22,66 @@ export class PayoutMethodsService {
     private readonly bankingFactory: BankingProviderFactory,
   ) {}
 
+  private cachedBanks: BankInfo[] = [];
+  private lastFetchedBanksAt = 0;
+
   async getBanks(): Promise<BankInfo[]> {
-    return this.bankingFactory.getProvider().getBanks();
+    const now = Date.now();
+    if (this.cachedBanks.length > 0 && now - this.lastFetchedBanksAt < 3600000) {
+      return this.cachedBanks;
+    }
+
+    try {
+      const rampBaseUrl = process.env.QUIDAX_RAMP_BASE_URL || 'https://ramp-be.quidax.io';
+      const rampPrivateKey = process.env.QUIDAX_RAMP_PRIVATE_KEY || '';
+      if (rampPrivateKey) {
+        const resp = await fetch(`${rampBaseUrl}/api/v1/merchants/custodial/banks?country=NG`, {
+          headers: { 'x-private-key': rampPrivateKey, accept: 'application/json' },
+        });
+        const json = await resp.json();
+        if (resp.ok && Array.isArray(json.data) && json.data.length > 0) {
+          this.cachedBanks = json.data
+            .map((b: any) => ({ code: b.code, name: b.name }))
+            .sort((a: BankInfo, b: BankInfo) => a.name.localeCompare(b.name));
+          this.lastFetchedBanksAt = now;
+          return this.cachedBanks;
+        }
+      }
+    } catch {
+      // fallback
+    }
+
+    try {
+      return await this.bankingFactory.getProvider().getBanks();
+    } catch {
+      return this.cachedBanks;
+    }
   }
 
   async lookupBankAccount(accountNumber: string, bankCode: string): Promise<BankAccountLookupResult> {
     if (!/^\d{10}$/.test(accountNumber)) {
-      throw new BadRequestException('Nigerian NUBAN account number must be 10 digits');
+      throw new BadRequestException('Account number must be 10 digits');
     }
 
-    const res = await this.bankingFactory.getProvider().resolveAccount(accountNumber, bankCode);
-    return {
-      accountNumber: res.accountNumber,
-      bankCode: res.bankCode,
-      accountName: res.accountName,
-    };
+    try {
+      const res = await this.bankingFactory.getProvider().resolveAccount(accountNumber, bankCode);
+      return {
+        accountNumber: res.accountNumber,
+        bankCode: res.bankCode,
+        accountName: res.accountName,
+      };
+    } catch (err: any) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new BadRequestException(
+          err.message || 'Unable to resolve bank account. Please check the account number and bank.',
+        );
+      }
+      return {
+        accountNumber,
+        bankCode,
+        accountName: 'Demo Account Holder (Test Mode)',
+      };
+    }
   }
 
   async addBankAccount(workerId: string, dto: AddBankAccountDto): Promise<PayoutMethodEntity> {
@@ -111,6 +156,37 @@ export class PayoutMethodsService {
       id: pm.id,
       accountReference: pm.accountReference,
     };
+  }
+
+  async linkExistingMethod(workerId: string, existingMethodId: string): Promise<PayoutMethodEntity> {
+    const worker = await this.workerRepo.findOne({ where: { id: workerId } });
+    if (!worker) throw new NotFoundException('Worker not found');
+
+    const source = await this.pmRepo.findOne({ where: { id: existingMethodId } });
+    if (!source) throw new NotFoundException('Existing payout method not found');
+
+    await this.pmRepo.update({ workerId, isDefault: true }, { isDefault: false });
+
+    const newPm = this.pmRepo.create({
+      workerId, type: source.type, accountReference: source.accountReference,
+      bankCode: source.bankCode, bankName: source.bankName, accountName: source.accountName,
+      network: source.network, isVerified: true, isDefault: true,
+    });
+    return this.pmRepo.save(newPm);
+  }
+
+  async setDefault(id: string): Promise<PayoutMethodEntity> {
+    const pm = await this.pmRepo.findOne({ where: { id } });
+    if (!pm) throw new NotFoundException('Payout method not found');
+    await this.pmRepo.update({ workerId: pm.workerId }, { isDefault: false });
+    pm.isDefault = true;
+    return this.pmRepo.save(pm);
+  }
+
+  async deleteMethod(id: string): Promise<void> {
+    const pm = await this.pmRepo.findOne({ where: { id } });
+    if (!pm) throw new NotFoundException('Payout method not found');
+    await this.pmRepo.remove(pm);
   }
 }
 

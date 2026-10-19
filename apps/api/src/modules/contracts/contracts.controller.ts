@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
 import { ContractsService } from './contracts.service';
 import { SignContractDto } from './contracts.types';
@@ -40,5 +41,17 @@ export class ContractsController {
     const userAgent = req.headers['user-agent'] || 'PayCrew Web';
     const data = await this.contractsService.signContract(id, dto.typedName, ip, userAgent);
     return { success: true, data };
+  }
+
+  @Get(':id/download')
+  async downloadContract(
+    @Param('id') id: string,
+    @Res() res: any,
+  ) {
+    const { buffer, filename } = await this.contractsService.generateContractPdf(id);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+    res.end(buffer);
   }
 }

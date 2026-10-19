@@ -1,18 +1,12 @@
-import {
-  Injectable,
-  ConflictException,
-  UnauthorizedException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { authenticator } from 'otplib';
 import * as QRCode from 'qrcode';
-import { UserEntity, CompanyEntity } from '../../database/entities';
-import { UserRole, UserStatus } from '@paycrew/shared-types';
+import { UserEntity, CompanyEntity, WorkerEntity } from '../../database/entities';
+import { UserRole, UserStatus, WorkerStatus, Currency, PayFrequency } from '@paycrew/shared-types';
 import { AuthResponse, JwtPayload, LoginDto, RegisterDto } from './auth.types';
 import { maskEmail } from '../../common/utils/masking.util';
 
@@ -23,26 +17,24 @@ export class AuthService {
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(CompanyEntity)
     private readonly companyRepo: Repository<CompanyEntity>,
+    @InjectRepository(WorkerEntity)
+    private readonly workerRepo: Repository<WorkerEntity>,
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
   ) {}
 
   async registerEmployer(dto: RegisterDto): Promise<AuthResponse> {
     const existing = await this.userRepo.findOne({ where: { email: dto.email.toLowerCase() } });
-    if (existing) {
-      throw new ConflictException('Email already registered');
-    }
+    if (existing) throw new ConflictException('Email already registered');
 
     const passwordHash = await argon2.hash(dto.password);
+    const isContractor = dto.role === UserRole.WORKER;
 
     return this.dataSource.transaction(async (manager) => {
       const company = manager.create(CompanyEntity, {
-        name: dto.companyName,
+        name: isContractor ? `${dto.fullName}'s Workspace` : dto.companyName,
         registrationNumber: dto.registrationNumber || null,
         country: dto.country || 'NG',
-        virtualAccountBank: null,
-        virtualAccountNumber: null,
-        depositWalletAddress: null,
       });
       const savedCompany = await manager.save(company);
 
@@ -50,13 +42,31 @@ export class AuthService {
         email: dto.email.toLowerCase(),
         passwordHash,
         fullName: dto.fullName,
-        role: UserRole.COMPANY_OWNER,
+        role: isContractor ? UserRole.WORKER : UserRole.COMPANY_OWNER,
         status: UserStatus.ACTIVE,
         companyId: savedCompany.id,
       });
       const savedUser = await manager.save(user);
 
-      return this.generateTokens(savedUser);
+      let workerId: string | null = null;
+      if (isContractor) {
+        const worker = manager.create(WorkerEntity, {
+          companyId: savedCompany.id,
+          userId: savedUser.id,
+          name: dto.fullName,
+          email: dto.email.toLowerCase(),
+          role: dto.companyName || 'Contractor',
+          country: dto.country || 'NG',
+          payAmount: '0.00',
+          payCurrency: Currency.USDT,
+          payFrequency: PayFrequency.MONTHLY,
+          status: WorkerStatus.ONBOARDING,
+        });
+        const savedWorker = await manager.save(worker);
+        workerId = savedWorker.id;
+      }
+
+      return this.generateTokens(savedUser, workerId);
     });
   }
 
@@ -82,49 +92,43 @@ export class AuthService {
     }
 
     if (user.twoFactorEnabled) {
-      if (!dto.twoFactorToken) {
-        throw new UnauthorizedException('Two-factor authentication code required');
-      }
-      const isValid = authenticator.verify({
-        token: dto.twoFactorToken,
-        secret: user.twoFactorSecret || '',
-      });
-      if (!isValid) {
+      if (!dto.twoFactorToken) throw new UnauthorizedException('Two-factor authentication code required');
+      if (!authenticator.verify({ token: dto.twoFactorToken, secret: user.twoFactorSecret || '' })) {
         throw new UnauthorizedException('Invalid 2FA code');
       }
     }
 
-    return this.generateTokens(user);
+    let workerId: string | null = null;
+    if (user.role === UserRole.WORKER) {
+      const worker = await this.workerRepo.findOne({ where: [{ userId: user.id }, { email: user.email }] });
+      if (worker) {
+        workerId = worker.id;
+        if (!worker.userId) {
+          worker.userId = user.id;
+          await this.workerRepo.save(worker);
+        }
+      }
+    }
+
+    return this.generateTokens(user, workerId);
   }
 
   async generate2faSecret(userId: string): Promise<{ secret: string; qrCode: string }> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
-
     const secret = authenticator.generateSecret();
-    const otpAuthUrl = authenticator.keyuri(user.email, 'PayCrew', secret);
-    const qrCode = await QRCode.toDataURL(otpAuthUrl);
-
+    const qrCode = await QRCode.toDataURL(authenticator.keyuri(user.email, 'PayCrew', secret));
     user.twoFactorSecret = secret;
     await this.userRepo.save(user);
-
     return { secret, qrCode };
   }
 
   async enable2fa(userId: string, token: string): Promise<{ success: boolean }> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
-    if (!user || !user.twoFactorSecret) {
-      throw new BadRequestException('2FA setup not initiated');
-    }
-
-    const isValid = authenticator.verify({
-      token,
-      secret: user.twoFactorSecret,
-    });
-    if (!isValid) {
+    if (!user || !user.twoFactorSecret) throw new BadRequestException('2FA setup not initiated');
+    if (!authenticator.verify({ token, secret: user.twoFactorSecret })) {
       throw new UnauthorizedException('Invalid verification code');
     }
-
     user.twoFactorEnabled = true;
     await this.userRepo.save(user);
     return { success: true };
@@ -163,8 +167,8 @@ export class AuthService {
     };
   }
 
-  private generateTokens(user: UserEntity): AuthResponse {
-    const payload: JwtPayload = { sub: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId };
+  private generateTokens(user: UserEntity, workerId?: string | null): AuthResponse {
+    const payload: JwtPayload = { sub: user.id, email: user.email, fullName: user.fullName, role: user.role, companyId: user.companyId, workerId: workerId || undefined };
     const accessToken = this.jwtService.sign(payload, { secret: process.env.JWT_SECRET || 'paycrew_jwt_super_secret_key_2026', expiresIn: '15m' });
     const refreshToken = this.jwtService.sign(payload, { secret: process.env.JWT_REFRESH_SECRET || 'paycrew_refresh_super_secret_key_2026', expiresIn: '7d' });
 
@@ -180,6 +184,7 @@ export class AuthService {
         status: user.status,
         twoFactorEnabled: user.twoFactorEnabled,
         companyId: user.companyId,
+        workerId: workerId || null,
       },
     };
   }

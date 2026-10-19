@@ -1,12 +1,13 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
-import { UserEntity, CompanyEntity } from '../../database/entities';
-import { UserRole, UserStatus } from '@paycrew/shared-types';
+import { UserEntity, CompanyEntity, WorkerEntity } from '../../database/entities';
+import { UserRole, UserStatus, WorkerStatus, Currency, PayFrequency } from '@paycrew/shared-types';
 import { AuthResponse, JwtPayload } from './auth.types';
 import { maskEmail } from '../../common/utils/masking.util';
+import { fetchGoogleProfile, GoogleProfile } from './google-oauth.util';
 
 export interface GoogleAuthDto {
   credential?: string;
@@ -23,6 +24,8 @@ export class GoogleAuthService {
     private readonly userRepo: Repository<UserEntity>,
     @InjectRepository(CompanyEntity)
     private readonly companyRepo: Repository<CompanyEntity>,
+    @InjectRepository(WorkerEntity)
+    private readonly workerRepo: Repository<WorkerEntity>,
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
   ) {}
@@ -45,73 +48,12 @@ export class GoogleAuthService {
   }
 
   async authenticateWithGoogle(dto: GoogleAuthDto): Promise<AuthResponse> {
-    let email: string | undefined;
-    let name: string | undefined;
-    let googleId: string | undefined;
-    let avatarUrl: string | undefined;
+    const profile: GoogleProfile = await fetchGoogleProfile(dto);
+    const email = profile.email.toLowerCase();
+    const googleId = profile.googleId;
+    const name = profile.name;
+    const avatarUrl = profile.avatarUrl;
 
-    if (dto.credential) {
-      // 1. Verify Google ID Token via Google's tokeninfo API
-      const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${dto.credential}`);
-      if (!resp.ok) {
-        throw new UnauthorizedException('Invalid or expired Google credential');
-      }
-      const data = await resp.json();
-      email = data.email;
-      name = data.name;
-      googleId = data.sub;
-      avatarUrl = data.picture;
-    } else if (dto.code) {
-      // 2. Exchange authorization code with Google OAuth servers
-      const clientId = process.env.GOOGLE_CLIENT_ID;
-      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-      const redirectUri = dto.redirectUri || process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/login';
-
-      if (!clientId || !clientSecret) {
-        throw new BadRequestException('Google OAuth is not configured on the server (missing GOOGLE_CLIENT_ID/SECRET)');
-      }
-
-      const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          code: dto.code,
-          client_id: clientId,
-          client_secret: clientSecret,
-          redirect_uri: redirectUri,
-          grant_type: 'authorization_code',
-        }),
-      });
-
-      const tokenJson = await tokenResp.json();
-      if (!tokenResp.ok) {
-        console.error('Google token exchange error details:', tokenJson, 'using redirectUri:', redirectUri);
-        throw new UnauthorizedException(tokenJson.error_description || tokenJson.error || 'Failed to verify Google code');
-      }
-
-      // Fetch verified user profile with access token
-      const userResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${tokenJson.access_token}` },
-      });
-
-      if (!userResp.ok) {
-        throw new UnauthorizedException('Failed to retrieve user profile from Google');
-      }
-
-      const userData = await userResp.json();
-      email = userData.email;
-      name = userData.name;
-      googleId = userData.sub;
-      avatarUrl = userData.picture;
-    } else {
-      throw new BadRequestException('Google authentication requires a valid Google credential or authorization code');
-    }
-
-    if (!email) {
-      throw new BadRequestException('Google account must have a verified email address');
-    }
-
-    email = email.toLowerCase();
     let user = await this.userRepo.findOne({
       where: [{ googleId }, { email }],
     });
@@ -122,15 +64,52 @@ export class GoogleAuthService {
         user.avatarUrl = avatarUrl || user.avatarUrl;
         await this.userRepo.save(user);
       }
-      return this.generateTokens(user);
+      let workerId: string | null = null;
+      if (user.role === UserRole.WORKER) {
+        const worker = await this.workerRepo.findOne({
+          where: [{ userId: user.id }, { email }],
+        });
+        if (worker) {
+          workerId = worker.id;
+          if (!worker.userId) {
+            worker.userId = user.id;
+            await this.workerRepo.save(worker);
+          }
+        }
+      }
+      return this.generateTokens(user, workerId);
     }
 
-    // Register new user via Google
-    return this.dataSource.transaction(async (manager) => {
-      let companyId: string | null = null;
-      const role = dto.role || UserRole.COMPANY_OWNER;
+    // Auto-detect if user was already invited as a worker/contractor
+    const existingWorker = await this.workerRepo.findOne({ where: { email } });
+    if (existingWorker) {
+      return this.dataSource.transaction(async (manager) => {
+        const newUser = manager.create(UserEntity, {
+          email,
+          fullName: name || existingWorker.name || email.split('@')[0],
+          googleId,
+          avatarUrl: avatarUrl || null,
+          passwordHash: `google_oauth_${crypto.randomBytes(16).toString('hex')}`,
+          role: UserRole.WORKER,
+          status: UserStatus.ACTIVE,
+          companyId: existingWorker.companyId,
+        });
+        const savedUser = await manager.save(newUser);
+        existingWorker.userId = savedUser.id;
+        if (existingWorker.status === WorkerStatus.INVITED) {
+          existingWorker.status = WorkerStatus.ONBOARDING;
+        }
+        await manager.save(existingWorker);
+        return this.generateTokens(savedUser, existingWorker.id);
+      });
+    }
 
-      if (role === UserRole.COMPANY_OWNER) {
+    // Register brand new user with role autodetection
+    return this.dataSource.transaction(async (manager) => {
+      const isContractor = dto.role === UserRole.WORKER;
+      let companyId: string | null = null;
+
+      if (!isContractor) {
         const company = manager.create(CompanyEntity, {
           name: dto.companyName || `${name || email.split('@')[0]}'s Organization`,
           country: 'NG',
@@ -140,8 +119,16 @@ export class GoogleAuthService {
         });
         const savedCompany = await manager.save(company);
         companyId = savedCompany.id;
+      } else {
+        const personalCompany = manager.create(CompanyEntity, {
+          name: `${name || email.split('@')[0]}'s Workspace`,
+          country: 'NG',
+        });
+        const savedCompany = await manager.save(personalCompany);
+        companyId = savedCompany.id;
       }
 
+      const role = isContractor ? UserRole.WORKER : UserRole.COMPANY_OWNER;
       const newUser = manager.create(UserEntity, {
         email,
         fullName: name || email.split('@')[0],
@@ -152,18 +139,38 @@ export class GoogleAuthService {
         status: UserStatus.ACTIVE,
         companyId,
       });
-
       const savedUser = await manager.save(newUser);
-      return this.generateTokens(savedUser);
+
+      let workerId: string | null = null;
+      if (isContractor) {
+        const newWorker = manager.create(WorkerEntity, {
+          companyId: companyId!,
+          userId: savedUser.id,
+          name: savedUser.fullName,
+          email: savedUser.email,
+          role: 'Contractor',
+          country: 'NG',
+          payAmount: '0.00',
+          payCurrency: Currency.USDT,
+          payFrequency: PayFrequency.MONTHLY,
+          status: WorkerStatus.ONBOARDING,
+        });
+        const savedWorker = await manager.save(newWorker);
+        workerId = savedWorker.id;
+      }
+
+      return this.generateTokens(savedUser, workerId);
     });
   }
 
-  private generateTokens(user: UserEntity): AuthResponse {
+  private generateTokens(user: UserEntity, workerId?: string | null): AuthResponse {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
+      fullName: user.fullName,
       role: user.role,
       companyId: user.companyId,
+      workerId: workerId || undefined,
     };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -188,6 +195,7 @@ export class GoogleAuthService {
         status: user.status,
         twoFactorEnabled: user.twoFactorEnabled,
         companyId: user.companyId,
+        workerId: workerId || null,
       },
     };
   }

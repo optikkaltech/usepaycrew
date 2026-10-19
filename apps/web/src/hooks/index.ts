@@ -7,4 +7,5 @@ export * from './useGoogleAuth';
 export * from './useLocationData';
 export * from './useSubscriptionBilling';
 export * from './useCompanyOnboarding';
+export * from './useWorkerPortal';
 

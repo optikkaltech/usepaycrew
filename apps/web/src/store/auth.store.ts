@@ -11,6 +11,7 @@ export interface UserProfile {
   status: UserStatus;
   twoFactorEnabled: boolean;
   companyId: string | null;
+  workerId?: string | null;
 }
 
 interface AuthState {

@@ -27,7 +27,10 @@ export function BillingStep({ companyCountry, onSubmit, isLoading }: BillingStep
   );
 
   const currentPlan = Array.isArray(plans) ? plans.find((p: any) => p.id === selectedPlan) : null;
-  const planAmountUsd = currentPlan ? Number(currentPlan.basePriceUsd || currentPlan.basePrice || 0) : selectedPlan === 'GROWTH' ? 30 : selectedPlan === 'STARTER' ? 10 : 0;
+  const planUsdDefaults: Record<string, number> = { FREE: 0, STARTER: 10, GROWTH: 30, ENTERPRISE: 100 };
+  const planAmountUsd = currentPlan && currentPlan.basePriceUsd != null
+    ? Number(currentPlan.basePriceUsd)
+    : planUsdDefaults[selectedPlan] ?? 0;
   const displayPrice = currentPlan?.priceFormatted || (selectedPlan === 'GROWTH' ? (currencyInfo.isNaira ? '₦45,000' : '$30 USD') : selectedPlan === 'STARTER' ? (currencyInfo.isNaira ? '₦15,000' : '$10 USD') : (currencyInfo.isNaira ? '₦0' : '$0 USD'));
   const displaySubtitle = currentPlan?.priceSubtitle || (currencyInfo.isNaira ? `($${planAmountUsd} USD / mo)` : `(≈ ${planAmountUsd} USDT)`);
 
@@ -40,7 +43,7 @@ export function BillingStep({ companyCountry, onSubmit, isLoading }: BillingStep
   };
 
   return (
-    <Card variant="elevated" className="flex flex-col gap-5 border-border">
+    <Card variant="elevated" className="flex flex-col gap-5 border border-black/[0.08] dark:border-white/[0.08]">
       <div className="flex items-center gap-2.5 text-primary">
         <CreditCardIcon className="h-5 w-5" />
         <div>

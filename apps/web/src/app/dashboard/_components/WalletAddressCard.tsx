@@ -75,7 +75,7 @@ export function WalletAddressCard({
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-secondary/50 border border-border/80">
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-secondary/50 border border-border">
             <span className="font-mono text-body-xs text-foreground break-all select-all">
               {wallet.address}
             </span>

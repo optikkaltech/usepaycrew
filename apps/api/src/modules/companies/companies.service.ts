@@ -53,8 +53,11 @@ export class CompaniesService {
     });
     if (existing) return existing;
 
-    // 2. Generate live address from provider (Quidax API / configured treasury)
-    const ramp = this.rampFactory.getProvider(company.activeRampProvider || RampProviderType.QUIDAX);
+    const rampType =
+      company.activeRampProvider && company.activeRampProvider !== RampProviderType.MOCK
+        ? company.activeRampProvider
+        : RampProviderType.QUIDAX;
+    const ramp = this.rampFactory.getProvider(rampType);
     const result = await ramp.generateDepositAddress(currencyUpper as Currency, network);
 
     if (!result?.address) {
@@ -101,6 +104,15 @@ export class CompaniesService {
     if (dto.name) company.name = dto.name;
     if (dto.registrationNumber !== undefined) company.registrationNumber = dto.registrationNumber;
     if (dto.country) company.country = dto.country;
+    if (dto.activeRampProvider) company.activeRampProvider = dto.activeRampProvider;
+    if (dto.activeKycProvider) company.activeKycProvider = dto.activeKycProvider;
+    return this.companyRepo.save(company);
+  }
+
+  async updateProviders(companyId: string, dto: { activeRampProvider?: any; activeKycProvider?: any }): Promise<CompanyEntity> {
+    const company = await this.getCompany(companyId);
+    if (dto.activeRampProvider) company.activeRampProvider = dto.activeRampProvider;
+    if (dto.activeKycProvider) company.activeKycProvider = dto.activeKycProvider;
     return this.companyRepo.save(company);
   }
 }

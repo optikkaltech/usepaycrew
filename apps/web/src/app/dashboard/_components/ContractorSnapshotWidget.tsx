@@ -13,7 +13,7 @@ export function ContractorSnapshotWidget({ workers }: ContractorSnapshotWidgetPr
   const topWorkers = workers.slice(0, 4);
 
   return (
-    <Card className="flex flex-col gap-3 bg-card/90 border-border p-4 sm:p-5 shadow-xs">
+    <Card className="flex flex-col gap-3 bg-card/90 p-4 sm:p-5 shadow-xs">
       <div className="flex items-center justify-between pb-2 border-b border-border">
         <div>
           <h3 className="text-label-md font-bold text-foreground">

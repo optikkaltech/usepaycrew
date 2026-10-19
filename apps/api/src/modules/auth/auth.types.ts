@@ -33,6 +33,9 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   country?: string;
+
+  @IsOptional()
+  role?: UserRole;
 }
 
 export class LoginDto {
@@ -64,5 +67,6 @@ export interface AuthResponse {
     status: UserStatus;
     twoFactorEnabled: boolean;
     companyId: string | null;
+    workerId?: string | null;
   };
 }

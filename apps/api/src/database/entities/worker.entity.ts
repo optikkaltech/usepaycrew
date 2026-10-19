@@ -90,6 +90,9 @@ export class WorkerEntity {
   @Column({ type: 'boolean', default: false })
   autoCashoutEnabled: boolean;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  transactionPinHash: string | null;
+
   @Column({ type: 'timestamptz', nullable: true })
   inviteExpiresAt: Date | null;
 

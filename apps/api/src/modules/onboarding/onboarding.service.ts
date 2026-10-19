@@ -59,14 +59,22 @@ export class OnboardingService {
     const company = await this.companyRepo.findOne({ where: { id: companyId } });
     if (!company) throw new NotFoundException('Company not found');
 
-    if (!dto.directorBvnOrNin || dto.directorBvnOrNin.length < 10) {
-      throw new BadRequestException('A valid 11-digit BVN or NIN is required for corporate compliance');
+    if (dto.skip) {
+      company.onboardingStep = CompanyOnboardingStep.BILLING;
+      return this.companyRepo.save(company);
     }
 
-    const kycProvider = this.kycFactory.getProvider(company.activeKycProvider);
-    const kycResult = await kycProvider.verifyNin(dto.directorBvnOrNin);
-    if (!kycResult.success || kycResult.status !== KycStatus.APPROVED) {
-      throw new BadRequestException(kycResult.reasonCode || 'Director identity check could not be verified');
+    const isNigeria = (company.country || 'NG').toUpperCase() === 'NG';
+    const isBvnOrNin = dto.documentType === 'BVN' || dto.documentType === 'NIN';
+
+    if (isNigeria && isBvnOrNin && dto.directorBvnOrNin) {
+      if (dto.directorBvnOrNin.length === 11) {
+        const kycProvider = this.kycFactory.getProvider(company.activeKycProvider);
+        const kycResult = await kycProvider.verifyNin(dto.directorBvnOrNin);
+        if (!kycResult.success || kycResult.status !== KycStatus.APPROVED) {
+          throw new BadRequestException(kycResult.reasonCode || 'Director identity check could not be verified');
+        }
+      }
     }
 
     company.onboardingStep = CompanyOnboardingStep.BILLING;

@@ -10,10 +10,11 @@ export interface UpdateCompanyProfileDto {
 }
 
 export interface UpdateCompanyComplianceDto {
-  directorName: string;
-  directorBvnOrNin: string;
-  documentType: string;
+  directorName?: string;
+  directorBvnOrNin?: string;
+  documentType?: string;
   documentUrl?: string;
+  skip?: boolean;
 }
 
 export interface UpdateWorkerProfileDto {

@@ -10,6 +10,7 @@ import {
   MoonIcon,
   EyeIcon,
   EyeOffIcon,
+  ShieldIcon,
 } from '@/assets';
 import { MaskedField } from '@/components/ui/MaskedField';
 import { DASHBOARD_NAV_ITEMS } from './sidebar.constants';
@@ -104,6 +105,21 @@ export function DashboardSidebar({
               </Link>
             );
           })}
+
+          {user?.role === 'PLATFORM_ADMIN' && (
+            <Link
+              href="/admin"
+              className={clsx(
+                'flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-label-sm transition-all min-h-[42px] border border-brand-emerald/30',
+                pathname.startsWith('/admin')
+                  ? 'bg-brand-emerald/15 text-brand-emerald font-semibold shadow-xs'
+                  : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
+              )}
+            >
+              <ShieldIcon className="h-4 w-4 shrink-0 text-brand-emerald" />
+              <span>Platform Admin</span>
+            </Link>
+          )}
         </nav>
       </div>
 

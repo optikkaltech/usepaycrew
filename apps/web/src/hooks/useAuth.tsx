@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useAuthStore } from '@/store';
+import { useAuthStore, useLoadingStore } from '@/store';
 import { TokenService, AuthService } from '@/services';
 import { useRouter } from 'next/navigation';
 import { useToast } from './useToast';
@@ -48,7 +48,12 @@ export function useLogin() {
       TokenService.setRefreshToken(data.refreshToken);
       setUser(data.user);
       toast.success('Signed in successfully');
-      router.push('/dashboard');
+      useLoadingStore.getState().startLoading('Launching your workspace...');
+      if (data.user?.role === 'WORKER') {
+        router.push(data.user.workerId ? `/worker/${data.user.workerId}` : `/worker/${data.user.id}`);
+      } else {
+        router.push('/dashboard');
+      }
     },
   });
 }
@@ -65,7 +70,13 @@ export function useRegister() {
       TokenService.setRefreshToken(data.refreshToken);
       setUser(data.user);
       toast.success('Account created successfully');
-      router.push('/dashboard');
+      useLoadingStore.getState().startLoading('Preparing your workspace & launching dashboard...');
+      if (data.user?.role === 'WORKER') {
+        const workerId = data.user.workerId || data.user.id;
+        router.push(`/worker/${workerId}`);
+      } else {
+        router.push('/dashboard');
+      }
     },
   });
 }

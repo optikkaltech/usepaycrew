@@ -37,13 +37,13 @@ export function BillingCryptoTransfer({ amountUsd, planId, onConfirm, isLoading 
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-4 text-left">
+    <div className="flex flex-col gap-3 rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-card p-4 text-left shadow-xs">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-primary font-bold text-label-sm">
           <WalletIcon className="h-4 w-4" />
           <span>Dedicated Quidax USDT Deposit</span>
         </div>
-        <span className="text-label-md font-extrabold text-foreground">${amountUsd} USDT</span>
+        <span className="text-label-md font-extrabold text-foreground">{amountUsd} USDT</span>
       </div>
 
       <div>
@@ -98,7 +98,7 @@ export function BillingCryptoTransfer({ amountUsd, planId, onConfirm, isLoading 
       </div>
 
       <p className="text-[11px] text-muted-foreground leading-relaxed">
-        Transfer exactly <strong className="text-foreground">${amountUsd} USDT</strong> on the{' '}
+        Transfer exactly <strong className="text-foreground">{amountUsd} USDT</strong> on the{' '}
         <strong className="text-foreground">{network}</strong> network. Deposits are automatically credited via Quidax OTC rails.
       </p>
 
@@ -114,7 +114,7 @@ export function BillingCryptoTransfer({ amountUsd, planId, onConfirm, isLoading 
             <span>Verifying Transfer...</span>
           </>
         ) : (
-          <span>I Have Transferred ${amountUsd} USDT</span>
+          <span>I Have Transferred {amountUsd} USDT</span>
         )}
       </button>
     </div>

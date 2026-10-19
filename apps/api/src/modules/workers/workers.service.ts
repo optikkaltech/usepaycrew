@@ -1,42 +1,27 @@
-import {
-  Injectable,
-  Logger,
-  ConflictException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import * as crypto from 'crypto';
 import * as argon2 from 'argon2';
-import { WorkerEntity, ContractEntity, UserEntity } from '../../database/entities';
-import {
-  ContractStatus,
-  PayoutMethodType,
-  UserRole,
-  UserStatus,
-  WorkerStatus,
-} from '@paycrew/shared-types';
-import { CreateWorkerDto, WorkerAcceptInviteDto } from './workers.types';
-import { AuthService } from '../auth/auth.service';
+import { WorkerEntity, ContractEntity, UserEntity, CompanyEntity } from '../../database/entities';
+import { ContractStatus, PayoutMethodType, UserRole, UserStatus, WorkerStatus } from '@paycrew/shared-types';
+import { CreateWorkerDto, WorkerAcceptInviteDto, UpdateWorkerDto } from './workers.types';
 import { maskEmail, maskAccountNumber, maskWalletAddress } from '../../common/utils/masking.util';
-
 import { MailerSendProvider } from '../../providers/email/mailersend.provider';
 import { env } from '../../config';
+import { WorkersInviteService } from './workers-invite.service';
 
 @Injectable()
 export class WorkersService {
   private readonly logger = new Logger(WorkersService.name);
 
   constructor(
-    @InjectRepository(WorkerEntity)
-    private readonly workerRepo: Repository<WorkerEntity>,
-    @InjectRepository(ContractEntity)
-    private readonly contractRepo: Repository<ContractEntity>,
-    @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>,
+    @InjectRepository(WorkerEntity) private readonly workerRepo: Repository<WorkerEntity>,
+    @InjectRepository(ContractEntity) private readonly contractRepo: Repository<ContractEntity>,
+    @InjectRepository(UserEntity) private readonly userRepo: Repository<UserEntity>,
     private readonly dataSource: DataSource,
     private readonly mailer: MailerSendProvider,
+    private readonly inviteService: WorkersInviteService,
   ) {}
 
   async createWorker(companyId: string, dto: CreateWorkerDto): Promise<WorkerEntity> {
@@ -74,25 +59,40 @@ export class WorkersService {
         status: ContractStatus.SENT,
       });
       await manager.save(contract);
-
       return savedWorker;
     });
 
-    // Send invitation email via MailerSend
     const inviteUrl = `${env.FRONTEND_URL}/onboard/${inviteToken}`;
+    const company = await this.dataSource.getRepository(CompanyEntity).findOne({ where: { id: companyId } });
     this.mailer
       .sendContractorInvite({
         to: saved.email,
         contractorName: saved.name,
-        companyName: 'PayCrew Company',
+        companyName: company?.name || 'PayCrew',
         role: saved.role,
         payAmount: saved.payAmount,
         payCurrency: saved.payCurrency,
+        payFrequency: saved.payFrequency,
         inviteUrl,
+        expiresIn: '7 days',
       })
       .catch((err) => this.logger.warn(`Failed to dispatch invite email: ${err.message}`));
 
     return saved;
+  }
+
+  async createBulkWorkers(companyId: string, dtos: CreateWorkerDto[]): Promise<{ created: WorkerEntity[]; failed: { email: string; reason: string }[] }> {
+    const created: WorkerEntity[] = [];
+    const failed: { email: string; reason: string }[] = [];
+    for (const dto of dtos) {
+      try {
+        const worker = await this.createWorker(companyId, dto);
+        created.push(worker);
+      } catch (err: any) {
+        failed.push({ email: dto.email, reason: err.message || 'Failed to create worker' });
+      }
+    }
+    return { created, failed };
   }
 
   async getWorkersByCompany(companyId: string): Promise<any[]> {
@@ -124,47 +124,37 @@ export class WorkersService {
     return worker;
   }
 
-  async getWorkerByInviteToken(token: string): Promise<WorkerEntity> {
-    const worker = await this.workerRepo.findOne({
-      where: { inviteToken: token },
-      relations: ['company', 'contracts'],
-    });
-    if (!worker) throw new NotFoundException('Invalid or expired invitation token');
-    if (worker.inviteExpiresAt && worker.inviteExpiresAt < new Date()) {
-      throw new BadRequestException('Invitation link has expired');
-    }
-    return worker;
+  async getWorkerByInviteToken(token: string): Promise<any> {
+    return this.inviteService.getWorkerByInviteToken(token);
   }
 
-  async acceptInvite(dto: WorkerAcceptInviteDto): Promise<{ worker: WorkerEntity; user: UserEntity }> {
-    const worker = await this.getWorkerByInviteToken(dto.token);
+  async acceptInvite(dto: WorkerAcceptInviteDto, currentUser?: any): Promise<any> {
+    return this.inviteService.acceptInvite(dto, currentUser);
+  }
 
-    const existingUser = await this.userRepo.findOne({
-      where: { email: worker.email.toLowerCase() },
-    });
-    if (existingUser) {
-      throw new ConflictException('A user account already exists for this email');
-    }
+  async updateWorker(companyId: string, workerId: string, dto: UpdateWorkerDto): Promise<WorkerEntity> {
+    const worker = await this.workerRepo.findOne({ where: { id: workerId, companyId } });
+    if (!worker) throw new NotFoundException('Worker not found');
 
-    const passwordHash = await argon2.hash(dto.password);
+    if (dto.name !== undefined) worker.name = dto.name;
+    if (dto.role !== undefined) worker.role = dto.role;
+    if (dto.country !== undefined) worker.country = dto.country;
+    if (dto.payAmount !== undefined) worker.payAmount = parseFloat(dto.payAmount).toFixed(2);
+    if (dto.payCurrency !== undefined) worker.payCurrency = dto.payCurrency;
+    if (dto.payFrequency !== undefined) worker.payFrequency = dto.payFrequency;
 
-    return this.dataSource.transaction(async (manager) => {
-      const user = manager.create(UserEntity, {
-        email: worker.email.toLowerCase(),
-        passwordHash,
-        fullName: worker.name,
-        role: UserRole.WORKER,
-        status: UserStatus.ACTIVE,
-        companyId: worker.companyId,
-      });
-      const savedUser = await manager.save(user);
+    return this.workerRepo.save(worker);
+  }
 
-      worker.userId = savedUser.id;
-      worker.status = WorkerStatus.ONBOARDING;
-      worker.inviteToken = null;
-      const updatedWorker = await manager.save(worker);
+  async deleteWorker(companyId: string, workerId: string): Promise<void> {
+    const worker = await this.workerRepo.findOne({ where: { id: workerId, companyId } });
+    if (!worker) throw new NotFoundException('Worker not found');
 
-      return { worker: updatedWorker, user: savedUser };
+    await this.dataSource.transaction(async (manager) => {
+      if (worker.userId) {
+        await manager.delete(UserEntity, { id: worker.userId });
+      }
+      await manager.remove(worker);
     });
   }
 
@@ -172,5 +162,38 @@ export class WorkersService {
     const worker = await this.getWorkerById(workerId);
     worker.autoCashoutEnabled = autoCashoutEnabled;
     return this.workerRepo.save(worker);
+  }
+
+  async updateProfile(
+    workerId: string,
+    dto: { name?: string; email?: string; role?: string; country?: string },
+  ): Promise<WorkerEntity> {
+    const worker = await this.getWorkerById(workerId);
+    if (dto.name !== undefined) worker.name = dto.name;
+    if (dto.email !== undefined) worker.email = dto.email;
+    if (dto.role !== undefined) worker.role = dto.role;
+    if (dto.country !== undefined) worker.country = dto.country;
+    return this.workerRepo.save(worker);
+  }
+
+  async setTransactionPin(
+    workerId: string,
+    pin: string,
+    currentPin?: string,
+  ): Promise<{ success: boolean }> {
+    if (!pin || pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin)) {
+      throw new BadRequestException('PIN must be 4 to 6 numeric digits');
+    }
+    const worker = await this.getWorkerById(workerId);
+    if (worker.transactionPinHash && currentPin) {
+      const isValid = await argon2.verify(worker.transactionPinHash, currentPin);
+      if (!isValid) throw new BadRequestException('Current PIN is incorrect');
+    } else if (worker.transactionPinHash && !currentPin) {
+      throw new BadRequestException('Current PIN is required to change your transaction PIN');
+    }
+
+    worker.transactionPinHash = await argon2.hash(pin);
+    await this.workerRepo.save(worker);
+    return { success: true };
   }
 }
