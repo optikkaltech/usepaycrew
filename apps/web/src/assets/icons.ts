@@ -53,6 +53,7 @@ export {
   Plus as PlusIcon,
   RefreshCw as RefreshCwIcon,
   Search as SearchIcon,
+  Send as SendIcon,
   Shield as ShieldIcon,
   ShieldAlert as ShieldAlertIcon,
   ShieldCheck as ShieldCheckIcon,

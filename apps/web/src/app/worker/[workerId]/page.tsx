@@ -3,7 +3,8 @@
 import { use, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/services';
-import { useToast, useTheme } from '@/hooks';
+import { useToast, useTheme, useAuth } from '@/hooks';
+import { usePrivacyStore } from '@/store';
 import { ContractorSidebar } from './_components/ContractorSidebar';
 import { WorkerHeader } from './_components/WorkerHeader';
 import { ContractorOverviewTab } from './_components/ContractorOverviewTab';
@@ -18,7 +19,9 @@ import { ContractorTab } from './_components/contractor.types';
 export default function WorkerPortalPage({ params }: { params: Promise<{ workerId: string }> }) {
   const { workerId } = use(params);
   const toast = useToast();
-  const { isDark, toggleTheme } = useTheme();
+  const { logout } = useAuth();
+  const { isDark, toggleTheme, mounted } = useTheme();
+  const { isPrivacyMode, togglePrivacyMode } = usePrivacyStore();
 
   const [activeTab, setActiveTab] = useState<ContractorTab>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -64,15 +67,22 @@ export default function WorkerPortalPage({ params }: { params: Promise<{ workerI
         onTabChange={setActiveTab}
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
+        onLogout={logout}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
         <WorkerHeader
           firstName={firstName}
+          fullName={worker?.name}
+          activeTab={activeTab}
+          liveRate={liveRate}
           isDark={isDark}
+          mounted={mounted}
           toggleTheme={toggleTheme}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
-          showWelcome={false}
+          isPrivacyMode={isPrivacyMode}
+          togglePrivacyMode={togglePrivacyMode}
+          onLogout={logout}
         />
 
         <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full flex flex-col gap-6">
@@ -124,7 +134,7 @@ export default function WorkerPortalPage({ params }: { params: Promise<{ workerI
             <ContractorEarningsTab
               payments={payments}
               liveRate={liveRate}
-              companyName={worker?.company?.name || 'Acme Inc.'}
+              companyName={worker?.company?.name || worker?.companyName || 'Your Employer'}
             />
           )}
 

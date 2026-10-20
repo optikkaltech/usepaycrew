@@ -13,3 +13,4 @@ export * from './EmptyState';
 export * from './Table';
 export * from './SystemBanner';
 export * from './GlobalPageLoader';
+export * from './BrandLogo';

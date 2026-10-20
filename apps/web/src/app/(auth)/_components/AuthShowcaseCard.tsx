@@ -1,6 +1,7 @@
 'use client';
 
 import { SparklesIcon, ZapIcon } from '@/assets';
+import { BrandLogo } from '@/components/ui';
 
 interface AuthShowcaseCardProps {
   headline?: string;
@@ -16,14 +17,7 @@ export function AuthShowcaseCard({
 
       {/* Top Header: Brand Name & Chiclet Badge */}
       <div className="relative z-10 flex flex-col gap-6">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-emerald text-black font-black text-caption shadow-sm">
-            P
-          </div>
-          <span className="text-label-md font-bold tracking-wider text-[#0F172A] dark:text-white uppercase">
-            PayCrew
-          </span>
-        </div>
+        <BrandLogo variant="full" size="md" />
 
         {/* Floating audio/chiclet key with indicator */}
         <div className="flex items-center gap-3">
@@ -38,8 +32,8 @@ export function AuthShowcaseCard({
       <div className="relative z-10 my-8 mx-auto w-full max-w-sm rounded-2xl bg-white/95 dark:bg-[#121316]/95 p-5 shadow-[0_16px_36px_-12px_rgba(0,0,0,0.06)] border border-black/[0.04] dark:border-white/[0.08] backdrop-blur-md transition-colors duration-200">
         {/* Tabs */}
         <div className="flex items-center gap-2 border-b border-gray-100 dark:border-white/[0.06] pb-3">
-          <div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-brand-emerald/10 border border-emerald-200/60 dark:border-brand-emerald/20 px-3 py-1 text-[11px] font-semibold text-emerald-800 dark:text-brand-emerald shadow-xs">
-            <SparklesIcon className="h-3 w-3 text-emerald-600 dark:text-brand-emerald" />
+          <div className="flex items-center gap-1.5 rounded-lg bg-[#0b3d2e]/10 dark:bg-brand-emerald/10 border border-[#0b3d2e]/20 dark:border-brand-emerald/20 px-3 py-1 text-[11px] font-semibold text-[#0b3d2e] dark:text-brand-emerald shadow-xs">
+            <SparklesIcon className="h-3 w-3 text-[#0b3d2e] dark:text-brand-emerald" />
             <span>Stablecoin Payroll</span>
           </div>
           <div className="px-2 py-1 text-[11px] font-medium text-gray-400 dark:text-[#8a8f98]">
@@ -64,7 +58,7 @@ export function AuthShowcaseCard({
           <span className="rounded-md border border-gray-200/80 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-gray-700 dark:text-[#8a8f98]">
             Local Bank Cashout
           </span>
-          <span className="rounded-md border border-emerald-200 dark:border-brand-emerald/20 bg-emerald-50/50 dark:bg-brand-emerald/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-brand-emerald">
+          <span className="rounded-md border border-[#0b3d2e]/20 dark:border-brand-emerald/20 bg-[#0b3d2e]/10 dark:bg-brand-emerald/10 px-2 py-0.5 text-[10px] font-semibold text-[#0b3d2e] dark:text-brand-emerald">
             14s Settlement
           </span>
         </div>

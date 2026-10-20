@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import clsx from 'clsx';
-import { ArrowDownLeftIcon, ArrowUpRightIcon } from '@/assets';
+import { ArrowDownLeftIcon, ArrowUpRightIcon, WalletIcon } from '@/assets';
 import { formatCurrency, formatDate } from '@/utils';
+import { EmptyState } from '@/components/ui';
+import { usePrivacyStore } from '@/store';
 
 interface WalletTransactionsListProps {
   payments: any[];
@@ -16,65 +18,31 @@ type FilterType = 'all' | 'incoming' | 'outgoing';
 export function WalletTransactionsList({
   payments = [],
   liveRate = 1580.45,
-  defaultBankName = 'GTBank',
+  defaultBankName = 'Bank',
 }: WalletTransactionsListProps) {
+  const { isPrivacyMode } = usePrivacyStore();
   const [filter, setFilter] = useState<FilterType>('all');
 
   const formatCompact = (val: number) => {
     if (val >= 1_000_000) return `₦${(val / 1_000_000).toFixed(2)}M`;
-    if (val >= 1_000) return `₦${(val / 1_000).toFixed(2)}K`;
+    if (val >= 1_000) return `₦${(val / 1_000).toFixed(1)}K`;
     return formatCurrency(val, 'NGN');
   };
 
-  // Build items from real payments or use mock matching design
-  const items = payments.length > 0
-    ? payments.map((p) => {
-        const isIncoming = p.type !== 'WITHDRAWAL' && p.type !== 'CONVERSION';
-        const usd = parseFloat(p.amount) || 0;
-        const ngn = usd * (p.fxRate || liveRate);
-        return {
-          id: p.id,
-          type: isIncoming ? ('incoming' as const) : ('outgoing' as const),
-          title: isIncoming ? `Salary — ${formatDate(p.createdAt || new Date())}` : `Converted to NGN → ${defaultBankName}`,
-          date: formatDate(p.createdAt || new Date()),
-          amountText: isIncoming ? `+${usd >= 1000 ? `${(usd / 1000).toFixed(1)}K` : usd.toFixed(2)} QD` : `-${usd.toFixed(2)} QD`,
-          nairaText: formatCompact(ngn),
-        };
-      })
-    : [
-        {
-          id: 'tx-1',
-          type: 'incoming' as const,
-          title: 'Salary — September 2026',
-          date: '30 Sept, 09:12',
-          amountText: '+1.2K',
-          nairaText: '₦1.85M',
-        },
-        {
-          id: 'tx-2',
-          type: 'outgoing' as const,
-          title: `Converted to NGN → ${defaultBankName}`,
-          date: '2 Oct, 14:30',
-          amountText: '-800.00 QD',
-          nairaText: '₦1.26M',
-        },
-        {
-          id: 'tx-3',
-          type: 'incoming' as const,
-          title: 'Salary — August 2026',
-          date: '31 Aug, 09:10',
-          amountText: '+1.2K',
-          nairaText: '₦1.85M',
-        },
-        {
-          id: 'tx-4',
-          type: 'outgoing' as const,
-          title: 'Auto-convert to NGN',
-          date: '30 Sept, 09:18',
-          amountText: '-369.99 QD',
-          nairaText: '₦584.8K',
-        },
-      ];
+  // Build items strictly from real payments
+  const items = payments.map((p) => {
+    const isIncoming = p.type !== 'WITHDRAWAL' && p.type !== 'CONVERSION';
+    const usd = parseFloat(p.amount) || 0;
+    const ngn = usd * (p.fxRate || liveRate);
+    return {
+      id: p.id,
+      type: isIncoming ? ('incoming' as const) : ('outgoing' as const),
+      title: isIncoming ? (p.note || `Salary — ${formatDate(p.createdAt || new Date())}`) : `Converted to NGN → ${defaultBankName}`,
+      date: formatDate(p.createdAt || new Date()),
+      amountText: isIncoming ? `+${usd.toFixed(2)} USDT` : `-${usd.toFixed(2)} USDT`,
+      nairaText: formatCompact(ngn),
+    };
+  });
 
   const filteredItems = items.filter((item) => {
     if (filter === 'all') return true;
@@ -111,9 +79,18 @@ export function WalletTransactionsList({
       {/* Transaction list container */}
       <div className="bg-card border border-border/80 shadow-xs rounded-2xl divide-y divide-border/60 overflow-hidden">
         {filteredItems.length === 0 ? (
-          <div className="p-8 text-center text-body-xs text-muted-foreground">
-            No transactions found for this filter.
-          </div>
+          payments.length === 0 ? (
+            <EmptyState
+              icon={WalletIcon}
+              title="No wallet transactions yet"
+              description="Incoming salary deposits, manual conversions, and withdrawals will appear here automatically."
+              className="p-8 border-0 bg-transparent"
+            />
+          ) : (
+            <div className="p-8 text-center text-body-xs text-muted-foreground">
+              No transactions found for this filter.
+            </div>
+          )
         ) : (
           filteredItems.map((item) => (
             <div
@@ -151,14 +128,14 @@ export function WalletTransactionsList({
                   className={clsx(
                     'text-body-xs sm:text-body-sm font-bold tracking-tight',
                     item.type === 'incoming'
-                      ? 'text-emerald-600 dark:text-emerald-400'
+                      ? 'text-[#0b3d2e] dark:text-brand-emerald'
                       : 'text-foreground'
                   )}
                 >
-                  {item.amountText}
+                  {isPrivacyMode ? '••••••' : item.amountText}
                 </span>
                 <span className="text-caption text-muted-foreground mt-0.5">
-                  {item.nairaText}
+                  {isPrivacyMode ? '••••••' : item.nairaText}
                 </span>
               </div>
             </div>

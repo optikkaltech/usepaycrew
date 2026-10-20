@@ -58,7 +58,7 @@ export function CompanyProfileSection({ company }: CompanyProfileSectionProps) {
 
       {/* Logo & Change Logo Button */}
       <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-emerald text-black shadow-sm">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black shadow-sm">
           <BuildingIcon className="h-7 w-7" />
         </div>
         <Button

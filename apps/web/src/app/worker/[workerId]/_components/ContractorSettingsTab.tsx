@@ -62,11 +62,11 @@ export function ContractorSettingsTab({
                 className={clsx(
                   'flex items-center gap-3 px-3.5 py-3 rounded-xl text-body-xs font-semibold transition-all text-left cursor-pointer min-h-[44px]',
                   isActive
-                    ? 'bg-[#008774]/10 text-[#008774] dark:bg-[#008774]/20 dark:text-emerald-400 font-bold'
+                    ? 'bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary font-bold'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                 )}
               >
-                <Icon className={clsx('h-4 w-4 shrink-0', isActive ? 'text-[#008774] dark:text-emerald-400' : 'text-muted-foreground')} />
+                <Icon className={clsx('h-4 w-4 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
                 <span>{item.label}</span>
               </button>
             );
@@ -101,7 +101,7 @@ export function ContractorSettingsTab({
                   onClick={onToggleAutoCashout}
                   className={clsx(
                     'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
-                    autoCashout ? 'bg-[#008774]' : 'bg-muted'
+                    autoCashout ? 'bg-primary' : 'bg-muted'
                   )}
                 >
                   <span
@@ -129,10 +129,10 @@ export function ContractorSettingsTab({
                 <p className="text-body-xs text-muted-foreground mt-0.5">Choose which notifications you wish to receive.</p>
               </div>
               <div className="space-y-3">
-                {['Salary payment received', 'Conversion & withdrawal settled', 'Market rate alert triggers'].map((label, idx) => (
+                {['Salary payment received', 'Conversion & withdrawal settled', 'Market rate alert triggers'].map((label) => (
                   <div key={label} className="p-3.5 rounded-xl border border-border flex items-center justify-between">
                     <span className="text-body-xs font-medium text-foreground">{label}</span>
-                    <span className="text-[11px] font-bold text-[#008774] flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-primary flex items-center gap-1">
                       <CheckCircleIcon className="h-3.5 w-3.5" /> Enabled
                     </span>
                   </div>
@@ -152,7 +152,7 @@ export function ContractorSettingsTab({
                   <div className="text-body-xs font-bold text-foreground">2-Factor Authentication</div>
                   <div className="text-caption text-muted-foreground">Protect your withdrawals with SMS / Authenticator verification.</div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#008774]/10 text-[#008774]">Active</span>
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-primary/10 text-primary">Active</span>
               </div>
             </div>
           )}

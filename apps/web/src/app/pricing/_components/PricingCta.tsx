@@ -26,7 +26,7 @@ export function PricingCta() {
           <Link
             href="/register"
             prefetch={true}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand-emerald hover:bg-brand-emerald/90 text-black px-6 py-3 text-label-sm font-semibold transition-all shadow-[0_0_20px_rgba(6,214,160,0.3)]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#0b3d2e] hover:bg-[#0b3d2e]/90 text-white dark:bg-brand-emerald dark:hover:bg-brand-emerald/90 dark:text-black px-6 py-3 text-label-sm font-semibold transition-all shadow-md dark:shadow-[0_0_20px_rgba(57,255,20,0.3)]"
           >
             <span>Create Company Account</span>
             <ArrowRightIcon className="h-4 w-4" />

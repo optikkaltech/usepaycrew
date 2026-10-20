@@ -3,6 +3,7 @@
 import { BanknoteIcon, WalletIcon, ZapIcon, BuildingIcon } from '@/assets';
 import { Card } from '@/components/ui/Card';
 import { formatCurrency } from '@/utils';
+import { usePrivacyStore } from '@/store';
 
 interface ContractorMetricsGridProps {
   totalEarnedUsd: number;
@@ -23,6 +24,7 @@ export function ContractorMetricsGrid({
   defaultBankName = 'No Bank Linked',
   defaultBankLast4,
 }: ContractorMetricsGridProps) {
+  const { isPrivacyMode } = usePrivacyStore();
   const earnedNgn = totalEarnedUsd * liveRate;
 
   return (
@@ -39,7 +41,7 @@ export function ContractorMetricsGrid({
         </div>
         <div className="mt-3">
           <p className="text-display-xs font-black text-foreground">
-            {formatCurrency(earnedNgn, 'NGN')}
+            {isPrivacyMode ? '••••••' : formatCurrency(earnedNgn, 'NGN')}
           </p>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-caption text-muted-foreground">
@@ -64,10 +66,10 @@ export function ContractorMetricsGrid({
         </div>
         <div className="mt-3">
           <p className="text-display-xs font-black text-foreground">
-            {availableUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
+            {isPrivacyMode ? '••••••' : `${availableUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`}
           </p>
           <p className="text-caption text-muted-foreground mt-1">
-            ≈ {formatCurrency(availableNgn, 'NGN')}
+            ≈ {isPrivacyMode ? '••••••' : formatCurrency(availableNgn, 'NGN')}
           </p>
         </div>
       </Card>

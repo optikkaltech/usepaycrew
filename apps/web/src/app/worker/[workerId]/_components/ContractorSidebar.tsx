@@ -9,7 +9,9 @@ import {
   CreditCardIcon,
   SlidersIcon,
   XIcon,
+  LogOutIcon,
 } from '@/assets';
+import { BrandLogo } from '@/components/ui';
 import { ContractorTab } from './contractor.types';
 
 interface ContractorSidebarProps {
@@ -17,6 +19,7 @@ interface ContractorSidebarProps {
   onTabChange: (tab: ContractorTab) => void;
   isOpen?: boolean;
   onClose?: () => void;
+  onLogout?: () => void;
 }
 
 const navItems: Array<{ id: ContractorTab; label: string; icon: any }> = [
@@ -33,13 +36,12 @@ export function ContractorSidebar({
   onTabChange,
   isOpen = false,
   onClose,
+  onLogout,
 }: ContractorSidebarProps) {
   const content = (
     <div className="flex flex-col h-full p-4 sm:p-5">
       <div className="flex items-center justify-between mb-6">
-        <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-          Contractor
-        </span>
+        <BrandLogo variant="full" size="md" />
         {onClose && (
           <button
             type="button"
@@ -66,14 +68,14 @@ export function ContractorSidebar({
               className={clsx(
                 'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-body-xs sm:text-body-sm font-medium transition-all text-left cursor-pointer min-h-[44px]',
                 isActive
-                  ? 'bg-[#008774]/10 text-[#008774] dark:bg-[#008774]/20 dark:text-emerald-400 border border-[#008774]/30 font-bold shadow-xs'
+                  ? 'bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary border border-primary/25 font-bold shadow-xs'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
               )}
             >
               <Icon
                 className={clsx(
                   'h-4 w-4 shrink-0 transition-colors',
-                  isActive ? 'text-[#008774] dark:text-emerald-400' : 'text-muted-foreground'
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
               />
               <span>{item.label}</span>
@@ -81,6 +83,19 @@ export function ContractorSidebar({
           );
         })}
       </nav>
+
+      {onLogout && (
+        <div className="pt-3 border-t border-border/60 mt-auto">
+          <button
+            type="button"
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-body-xs sm:text-body-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer min-h-[44px]"
+          >
+            <LogOutIcon className="h-4 w-4 shrink-0 text-destructive" />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 

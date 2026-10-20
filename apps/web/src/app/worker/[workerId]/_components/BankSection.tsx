@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusIcon } from '@/assets';
+import { CreditCardIcon, PlusIcon } from '@/assets';
 import { useToast } from '@/hooks';
 import { http } from '@/services';
+import { EmptyState } from '@/components/ui';
 import { BankAccountCard } from './BankAccountCard';
 import { AddBankModal } from './AddBankModal';
 
@@ -16,7 +17,7 @@ interface BankSectionProps {
 
 export function BankSection({
   workerId,
-  workerName = 'Adaeze Okonkwo',
+  workerName = 'Contractor',
   payoutMethods = [],
   onSuccess,
 }: BankSectionProps) {
@@ -26,7 +27,7 @@ export function BankSection({
   const handleSetDefault = async (methodId: string) => {
     try {
       await http.patch(`/payout-methods/${methodId}/default`, {});
-      toast.success('Default account updated');
+      toast.success('Default payout account updated');
       onSuccess();
     } catch (err: any) {
       toast.error(err.message || 'Failed to update default account');
@@ -43,27 +44,6 @@ export function BankSection({
     }
   };
 
-  // Build items from real payout methods or fallback to user design mock
-  const displayMethods =
-    payoutMethods.length > 0
-      ? payoutMethods
-      : [
-          {
-            id: 'mock-1',
-            bankName: 'GTBank',
-            accountName: workerName,
-            accountReference: '0123456789',
-            isDefault: true,
-          },
-          {
-            id: 'mock-2',
-            bankName: 'Access Bank',
-            accountName: workerName,
-            accountReference: '0098765432',
-            isDefault: false,
-          },
-        ];
-
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -78,7 +58,7 @@ export function BankSection({
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="h-11 px-4 sm:px-5 rounded-xl bg-[#008774] hover:bg-[#007060] text-white font-bold text-body-xs sm:text-body-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
+          className="h-11 px-4 sm:px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-body-xs sm:text-body-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
         >
           <PlusIcon className="h-4 w-4" />
           Add bank account
@@ -86,17 +66,28 @@ export function BankSection({
       </div>
 
       {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        {displayMethods.map((method) => (
-          <BankAccountCard
-            key={method.id}
-            method={method}
-            workerName={workerName}
-            onSetDefault={handleSetDefault}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {payoutMethods.length === 0 ? (
+        <EmptyState
+          icon={CreditCardIcon}
+          title="No bank accounts linked yet"
+          description="Add your local Nigerian bank account to enable automated settlements and instant cashouts."
+          actionLabel="Add bank account"
+          onAction={() => setModalOpen(true)}
+          className="p-8 border border-border/80 rounded-2xl bg-card"
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          {payoutMethods.map((method) => (
+            <BankAccountCard
+              key={method.id}
+              method={method}
+              workerName={workerName}
+              onSetDefault={handleSetDefault}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Add Bank Modal */}
       <AddBankModal

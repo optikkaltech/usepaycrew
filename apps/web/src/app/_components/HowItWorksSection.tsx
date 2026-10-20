@@ -44,7 +44,7 @@ export function HowItWorksSection() {
         {/* Header */}
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-black/[0.03] dark:border-white/[0.1] dark:bg-white/[0.03] px-3.5 py-1 text-caption text-gray-700 dark:text-[#8a8f98] mb-6 backdrop-blur-md shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-emerald shadow-[0_0_8px_#06D6A0]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-emerald shadow-[0_0_8px_#39FF14]" />
             <span>How it works</span>
           </div>
 
@@ -121,7 +121,7 @@ export function HowItWorksSection() {
               <div className="rounded-2xl border border-black/[0.08] bg-[#f8fafc] dark:border-white/[0.08] dark:bg-[#14151a] p-5 sm:p-6 shadow-xl max-w-md mx-auto">
                 {/* Connecting nodes */}
                 <div className="flex items-center justify-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-emerald text-black font-bold text-xs shadow-[0_0_12px_rgba(6,214,160,0.4)]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black font-bold text-xs shadow-sm dark:shadow-[0_0_12px_rgba(57,255,20,0.4)]">
                     P
                   </div>
                   <span className="text-brand-emerald text-xs">••••••</span>

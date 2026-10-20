@@ -95,7 +95,7 @@ export function GlobalPageLoader() {
       {/* Top glowing progress hairline bar */}
       <div className="relative h-[3px] w-full bg-transparent overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-brand-emerald via-[#06D6A0] to-brand-teal transition-all duration-300 ease-out shadow-[0_0_12px_rgba(6,214,160,0.8)]"
+          className="h-full bg-gradient-to-r from-brand-emerald via-brand-teal to-brand-emerald transition-all duration-300 ease-out shadow-[0_0_12px_rgba(57,255,20,0.8)]"
           style={{ width: `${progress}%` }}
         />
       </div>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { AppStrings, MenuIcon, MoonIcon, SunIcon, XIcon } from '@/assets';
+import { BrandLogo } from '@/components/ui';
 import { useTheme } from '@/hooks';
 import { useState, useEffect } from 'react';
 
@@ -33,14 +34,7 @@ export function LandingNav() {
         }`}
       >
         {/* PayCrew Emblem & Name */}
-        <Link href="/" prefetch={true} className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-emerald text-black font-black text-caption shadow-[0_0_12px_rgba(6,214,160,0.4)]">
-            P
-          </div>
-          <span className="text-label-md font-semibold text-gray-900 dark:text-white tracking-tight">
-            {AppStrings.appName}
-          </span>
-        </Link>
+        <BrandLogo variant="full" size="md" href="/" priority />
 
         {/* Center Links (desktop) */}
         <div className="hidden md:flex items-center gap-6">

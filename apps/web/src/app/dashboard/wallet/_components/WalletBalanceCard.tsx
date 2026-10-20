@@ -78,7 +78,7 @@ export function WalletBalanceCard({
       <div className="flex flex-wrap items-center gap-3">
         <Button
           onClick={onDepositClick}
-          className="min-h-[44px] px-5 bg-brand-emerald text-black hover:bg-[#05be8d] font-bold shadow-brand"
+          className="min-h-[44px] px-5 bg-[#0b3d2e] hover:bg-[#0b3d2e]/90 text-white dark:bg-brand-emerald dark:hover:bg-brand-emerald/90 dark:text-black font-bold shadow-md dark:shadow-brand"
         >
           <DownloadIcon className="mr-2 h-4 w-4" />
           {AppStrings.wallet.depositUsdt}

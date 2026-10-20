@@ -32,7 +32,7 @@ export function OnboardStepper({ currentStep }: OnboardStepperProps) {
                 <div
                   className={clsx(
                     'flex h-8 w-8 items-center justify-center rounded-full text-caption font-bold transition-all',
-                    isCompleted && 'bg-brand-emerald text-black shadow-[0_0_10px_rgba(6,214,160,0.3)]',
+                    isCompleted && 'bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black shadow-sm dark:shadow-[0_0_10px_rgba(57,255,20,0.3)]',
                     isCurrent && 'border-2 border-brand-emerald bg-card text-brand-emerald font-extrabold',
                     !isCompleted && !isCurrent && 'border border-border bg-secondary text-muted-foreground',
                   )}

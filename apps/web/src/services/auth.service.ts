@@ -16,4 +16,9 @@ export const AuthService = {
   exchangeGoogleCode: async (payload: { code: string; redirectUri: string; role?: string }) => {
     return http.post('/auth/google', payload);
   },
+  logout: async () => {
+    try {
+      await http.post('/auth/logout');
+    } catch (_) {}
+  },
 };

@@ -36,7 +36,7 @@ export function ContractorWalletTab({
         <div>
           <h1 className="text-display-sm font-black text-foreground">Wallet</h1>
           <p className="text-body-xs sm:text-body-sm text-muted-foreground mt-0.5">
-            Your QDASH balance, transactions, and payout preferences.
+            Your USDT balance, transactions, and payout preferences.
           </p>
         </div>
 
@@ -44,7 +44,7 @@ export function ContractorWalletTab({
           <button
             type="button"
             onClick={onGoToPreferences}
-            className="h-11 px-4 rounded-xl border border-[#008774] text-[#008774] hover:bg-[#008774]/5 font-bold text-body-xs sm:text-body-sm flex items-center gap-2 transition-colors cursor-pointer"
+            className="h-11 px-4 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 font-bold text-body-xs sm:text-body-sm flex items-center gap-2 transition-colors cursor-pointer"
           >
             <SlidersIcon className="h-4 w-4" />
             Preferences
@@ -52,7 +52,7 @@ export function ContractorWalletTab({
           <button
             type="button"
             onClick={onConvert}
-            className="h-11 px-5 rounded-xl bg-[#008774] hover:bg-[#007060] text-white font-bold text-body-xs sm:text-body-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-body-xs sm:text-body-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
           >
             <TrendingUpIcon className="h-4 w-4" />
             Convert

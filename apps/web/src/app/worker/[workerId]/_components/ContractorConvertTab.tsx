@@ -31,7 +31,7 @@ export function ContractorConvertTab({
       <div>
         <h1 className="text-display-sm font-black text-foreground">Convert & withdraw</h1>
         <p className="text-body-xs sm:text-body-sm text-muted-foreground mt-0.5">
-          Convert QDASH to Naira and send it to your bank account.
+          Convert USDT to Naira and send it to your bank account.
         </p>
       </div>
 

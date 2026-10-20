@@ -36,7 +36,7 @@ export function RateAlertCard() {
       <div>
         <h3 className="text-body-md font-bold text-foreground">Rate alert</h3>
         <p className="text-body-xs text-muted-foreground mt-0.5">
-          Get notified when QDASH/NGN hits your target.
+          Get notified when USDT/NGN hits your target.
         </p>
       </div>
 
@@ -47,12 +47,12 @@ export function RateAlertCard() {
             placeholder="₦ e.g. 1600"
             value={targetRate}
             onChange={(e) => setTargetRate(e.target.value)}
-            className="w-full h-11 rounded-xl border border-input bg-background px-3 text-body-xs font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-[#008774]"
+            className="w-full h-11 rounded-xl border border-input bg-background px-3 text-body-xs font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
         <button
           type="submit"
-          className="h-11 px-4 rounded-xl border border-[#008774] text-[#008774] hover:bg-[#008774]/5 font-bold text-body-xs transition-colors shrink-0 cursor-pointer"
+          className="h-11 px-4 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 font-bold text-body-xs transition-colors shrink-0 cursor-pointer"
         >
           Set alert
         </button>

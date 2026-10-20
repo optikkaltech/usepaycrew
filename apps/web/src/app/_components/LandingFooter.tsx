@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { InstagramIcon, LinkedinIcon, TwitterIcon } from '@/assets';
+import { BrandLogo } from '@/components/ui';
 
 export function LandingFooter() {
   const columns = [
@@ -50,12 +51,7 @@ export function LandingFooter() {
         {/* Top: Logo, Address, and Socials */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-12 border-b border-black/[0.06] dark:border-white/[0.04]">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-emerald text-black font-bold text-xs">
-                P
-              </div>
-              <span className="text-label-lg font-bold text-gray-900 dark:text-white tracking-tight">PayCrew</span>
-            </div>
+            <BrandLogo variant="full" size="md" />
             <p className="mt-2 text-caption text-gray-500 dark:text-[#6b7280]">
               The stablecoin payroll and contractor operations platform for modern African companies.
             </p>

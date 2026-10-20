@@ -5,6 +5,7 @@ import { TrendingUpIcon, DownloadIcon, BuildingIcon } from '@/assets';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { formatCurrency } from '@/utils';
+import { usePrivacyStore } from '@/store';
 
 interface ContractorHeroCardProps {
   availableUsd: number;
@@ -29,6 +30,7 @@ export function ContractorHeroCard({
   onToggleAutoCashout,
   isTogglingPreference = false,
 }: ContractorHeroCardProps) {
+  const { isPrivacyMode } = usePrivacyStore();
   return (
     <Card
       variant="elevated"
@@ -42,10 +44,10 @@ export function ContractorHeroCard({
 
         <div className="flex flex-col sm:flex-row sm:items-baseline gap-1.5 sm:gap-3">
           <span className="text-display-md sm:text-display-lg font-black text-foreground tracking-tight">
-            {availableUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
+            {isPrivacyMode ? '••••••' : `${availableUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`}
           </span>
           <span className="text-body-md font-semibold text-muted-foreground">
-            ≈ {formatCurrency(availableNgn, 'NGN')}
+            ≈ {isPrivacyMode ? '••••••' : formatCurrency(availableNgn, 'NGN')}
           </span>
         </div>
 
@@ -87,9 +89,9 @@ export function ContractorHeroCard({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
         <Button
           onClick={onConvert}
-          className="bg-brand-emerald hover:bg-brand-emerald/90 text-black font-bold shadow-sm min-h-[44px] px-5"
+          className="bg-[#0b3d2e] hover:bg-[#0b3d2e]/90 text-white dark:bg-brand-emerald dark:hover:bg-brand-emerald/90 dark:text-black font-bold shadow-sm min-h-[44px] px-5"
         >
-          <TrendingUpIcon className="mr-2 h-4 w-4 text-black" />
+          <TrendingUpIcon className="mr-2 h-4 w-4 text-white dark:text-black" />
           Convert to Naira
         </Button>
 

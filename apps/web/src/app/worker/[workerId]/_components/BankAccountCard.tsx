@@ -23,7 +23,7 @@ export function BankAccountCard({
       {/* Top Header Row */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3.5">
-          <div className="h-12 w-12 rounded-2xl bg-[#008774] text-white flex items-center justify-center shrink-0 shadow-xs">
+          <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs">
             <BuildingIcon className="h-6 w-6" />
           </div>
           <div className="flex flex-col">
@@ -85,7 +85,7 @@ export function BankAccountCard({
       {/* Bottom Status Row */}
       <div className="flex items-center justify-between pt-1">
         {method.isDefault ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#008774] text-white">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
             <CheckIcon className="h-3 w-3" />
             Default account
           </span>

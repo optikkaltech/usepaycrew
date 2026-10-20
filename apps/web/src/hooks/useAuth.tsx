@@ -10,9 +10,16 @@ export function useAuth() {
   const { user, isAuthenticated, setUser, logout: storeLogout } = useAuthStore();
   const router = useRouter();
 
-  const logout = () => {
+  const logout = async () => {
     storeLogout();
-    router.push('/login');
+    try {
+      await AuthService.logout();
+    } catch (_) {}
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    } else {
+      router.push('/login');
+    }
   };
 
   const profileQuery = useQuery({

@@ -58,7 +58,7 @@ function OnboardingContent() {
       {/* Top Header with Brand Emblem & Theme Toggle */}
       <header className="w-full max-w-xl flex items-center justify-between mb-6 z-10">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-emerald text-black font-black text-caption shadow-[0_0_12px_rgba(6,214,160,0.4)]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black font-black text-caption shadow-sm dark:shadow-[0_0_12px_rgba(57,255,20,0.4)]">
             P
           </div>
           <span className="text-label-md font-bold text-foreground tracking-tight">

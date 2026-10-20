@@ -16,7 +16,7 @@ export function DashboardCashflow() {
         <div className="flex items-center gap-2">
           <span className="text-label-sm font-semibold text-gray-900 dark:text-white">Treasury &amp; Payroll Flow</span>
           <InfoIcon className="h-3 w-3 text-gray-400 dark:text-[#6b7280]" />
-          <span className="rounded-full border border-emerald-500/20 bg-emerald-50 text-emerald-800 dark:border-brand-emerald/20 dark:bg-brand-emerald/10 dark:text-brand-emerald px-2 py-0.5 text-[10px] font-medium">
+          <span className="rounded-full border border-[#0b3d2e]/20 bg-[#0b3d2e]/10 text-[#0b3d2e] dark:border-brand-emerald/20 dark:bg-brand-emerald/10 dark:text-brand-emerald px-2 py-0.5 text-[10px] font-medium">
             Card NGN + Stablecoins
           </span>
         </div>
@@ -58,7 +58,7 @@ export function DashboardCashflow() {
             $56,148.45
           </span>
           <span className="text-[11px] text-gray-500 dark:text-[#8a8f98]">USDC (≈ ₦84,222,675)</span>
-          <span className="rounded-full bg-emerald-50 text-emerald-700 dark:bg-brand-emerald/10 dark:text-brand-emerald px-2 py-0.5 text-[11px] font-semibold">
+          <span className="rounded-full bg-[#0b3d2e]/10 text-[#0b3d2e] dark:bg-brand-emerald/10 dark:text-brand-emerald px-2 py-0.5 text-[11px] font-semibold">
             ↑ +18.4%
           </span>
         </div>
@@ -147,7 +147,7 @@ export function DashboardCashflow() {
                     Treasury Inflow
                   </span>
                   <span className="font-semibold text-gray-900 dark:text-white">$25,000</span>
-                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-brand-emerald">₦37.5M</span>
+                  <span className="text-[10px] font-semibold text-[#0b3d2e] dark:text-brand-emerald">₦37.5M</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="flex items-center gap-1 text-gray-600 dark:text-[#d1d5db]">
@@ -155,7 +155,7 @@ export function DashboardCashflow() {
                     Disbursements
                   </span>
                   <span className="font-semibold text-gray-900 dark:text-white">$16,278</span>
-                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-brand-emerald">24 Paid</span>
+                  <span className="text-[10px] font-semibold text-[#0b3d2e] dark:text-brand-emerald">24 Paid</span>
                 </div>
               </div>
             </div>

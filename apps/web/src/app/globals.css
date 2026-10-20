@@ -13,111 +13,111 @@
     --font-heading: var(--font-inter);
     --font-body: var(--font-inter);
 
-    --background: #fafbfc;
-    --foreground: #0c1f1a;
+    --background: #f4f9f6;
+    --foreground: #0b3d2e;
 
     --card: #ffffff;
-    --card-foreground: #0c1f1a;
+    --card-foreground: #0b3d2e;
 
     --popover: #ffffff;
-    --popover-foreground: #0c1f1a;
+    --popover-foreground: #0b3d2e;
 
-    --primary: #06D6A0;
-    --primary-foreground: #0c4137;
+    --primary: #0b3d2e;
+    --primary-foreground: #ffffff;
 
-    --secondary: #eef7f4;
-    --secondary-foreground: #0c4137;
+    --secondary: #e8f6ef;
+    --secondary-foreground: #0b3d2e;
 
-    --muted: #f1f5f9;
-    --muted-foreground: #526661;
+    --muted: #edf6f1;
+    --muted-foreground: #48695e;
 
-    --accent: #E6FBF6;
-    --accent-foreground: #0c4137;
+    --accent: #e0f6ec;
+    --accent-foreground: #0b3d2e;
 
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
 
-    --border: rgba(0, 0, 0, 0.08);
-    --input: rgba(0, 0, 0, 0.08);
-    --ring: #06D6A0;
+    --border: rgba(11, 61, 46, 0.12);
+    --input: rgba(11, 61, 46, 0.14);
+    --ring: #0b3d2e;
 
-    --brand-brunswick: #0C4137;
-    --brand-emerald: #06D6A0;
-    --brand-polar: #E6FBF6;
-    --brand-deep: #0A3C32;
-    --brand-teal: #0d9488;
-    --brand-glow: rgba(6, 214, 160, 0.12);
+    --brand-brunswick: #0b3d2e;
+    --brand-emerald: #0b3d2e;
+    --brand-polar: #e8fdf0;
+    --brand-deep: #0b3d2e;
+    --brand-teal: #0b3d2e;
+    --brand-glow: rgba(11, 61, 46, 0.15);
 
-    --success: #10b981;
+    --success: #0b3d2e;
     --success-foreground: #ffffff;
     --warning: #f59e0b;
     --warning-foreground: #ffffff;
-    --info: #06D6A0;
-    --info-foreground: #0c4137;
+    --info: #0b3d2e;
+    --info-foreground: #ffffff;
 
     --radius: 0.75rem;
 
-    --shadow-xs: 0 1px 2px 0 rgba(12, 65, 55, 0.04);
-    --shadow-sm: 0 1px 3px 0 rgba(12, 65, 55, 0.08), 0 1px 2px -1px rgba(12, 65, 55, 0.04);
-    --shadow-md: 0 4px 6px -1px rgba(12, 65, 55, 0.08), 0 2px 4px -2px rgba(12, 65, 55, 0.04);
-    --shadow-lg: 0 10px 15px -3px rgba(12, 65, 55, 0.08), 0 4px 6px -4px rgba(12, 65, 55, 0.04);
-    --shadow-xl: 0 20px 25px -5px rgba(12, 65, 55, 0.08), 0 8px 10px -6px rgba(12, 65, 55, 0.04);
-    --shadow-brand: 0 8px 24px -4px rgba(6, 214, 160, 0.25);
-    --shadow-glow: 0 0 25px -2px rgba(6, 214, 160, 0.25);
+    --shadow-xs: 0 1px 2px 0 rgba(11, 61, 46, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(11, 61, 46, 0.1), 0 1px 2px -1px rgba(11, 61, 46, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(11, 61, 46, 0.1), 0 2px 4px -2px rgba(11, 61, 46, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(11, 61, 46, 0.1), 0 4px 6px -4px rgba(11, 61, 46, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(11, 61, 46, 0.1), 0 8px 10px -6px rgba(11, 61, 46, 0.05);
+    --shadow-brand: 0 8px 24px -4px rgba(57, 255, 20, 0.35);
+    --shadow-glow: 0 0 25px -2px rgba(57, 255, 20, 0.35);
   }
 
   /* ── Dark Mode Override (.dark class) ── */
   .dark {
     color-scheme: dark;
-    --background: #08090b;
-    --foreground: #f4f5f7;
+    --background: #04150f;
+    --foreground: #f2fff7;
 
-    --card: #0e0f12;
-    --card-foreground: #f4f5f7;
+    --card: #082017;
+    --card-foreground: #f2fff7;
 
-    --popover: #0e0f12;
-    --popover-foreground: #f4f5f7;
+    --popover: #082017;
+    --popover-foreground: #f2fff7;
 
-    --primary: #06D6A0;
-    --primary-foreground: #08090b;
+    --primary: #39ff14;
+    --primary-foreground: #04150f;
 
-    --secondary: #141519;
-    --secondary-foreground: #e4e7ec;
+    --secondary: #0d2a20;
+    --secondary-foreground: #e2fbef;
 
-    --muted: #18191e;
-    --muted-foreground: #8a8f98;
+    --muted: #0f3125;
+    --muted-foreground: #7ba394;
 
-    --accent: #17181d;
-    --accent-foreground: #06D6A0;
+    --accent: #113a2c;
+    --accent-foreground: #39ff14;
 
     --destructive: #f87171;
     --destructive-foreground: #ffffff;
 
-    --border: rgba(255, 255, 255, 0.08);
-    --input: rgba(255, 255, 255, 0.08);
-    --ring: #06D6A0;
+    --border: rgba(57, 255, 20, 0.14);
+    --input: rgba(57, 255, 20, 0.16);
+    --ring: #39ff14;
 
-    --brand-brunswick: #0C4137;
-    --brand-emerald: #06D6A0;
-    --brand-polar: #E6FBF6;
-    --brand-deep: #0A3C32;
-    --brand-teal: #14b8a6;
-    --brand-glow: rgba(6, 214, 160, 0.12);
+    --brand-brunswick: #0b3d2e;
+    --brand-emerald: #39ff14;
+    --brand-polar: #e8fdf0;
+    --brand-deep: #0b3d2e;
+    --brand-teal: #007a4d;
+    --brand-glow: rgba(57, 255, 20, 0.22);
 
-    --success: #10b981;
-    --success-foreground: #ffffff;
+    --success: #39ff14;
+    --success-foreground: #04150f;
     --warning: #f59e0b;
     --warning-foreground: #ffffff;
-    --info: #06D6A0;
-    --info-foreground: #08090b;
+    --info: #39ff14;
+    --info-foreground: #04150f;
 
-    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-    --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-    --shadow-brand: 0 8px 24px -4px rgba(6, 214, 160, 0.15);
-    --shadow-glow: 0 0 25px -2px rgba(6, 214, 160, 0.15);
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.6);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.7), 0 1px 2px -1px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.7), 0 2px 4px -2px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.9), 0 8px 10px -6px rgba(0, 0, 0, 0.7);
+    --shadow-brand: 0 8px 30px -4px rgba(57, 255, 20, 0.35);
+    --shadow-glow: 0 0 35px 2px rgba(57, 255, 20, 0.30);
   }
 
   * {
@@ -194,13 +194,13 @@
   }
 
   .text-glow-emerald {
-    background: linear-gradient(180deg, #0C4137 0%, #06D6A0 65%, #0C4137 100%);
+    background: linear-gradient(180deg, #0B3D2E 0%, #39FF14 70%, #007A4D 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .dark .text-glow-emerald {
-    background: linear-gradient(180deg, #FFFFFF 0%, #06D6A0 65%, #0C4137 100%);
+    background: linear-gradient(180deg, #FFFFFF 0%, #39FF14 60%, #16DB2E 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -209,35 +209,35 @@
   /* ── Volumetric Horizon Beam & Spotlight Lighting ── */
   .lighting-spotlight-cone {
     clip-path: polygon(18% 0%, 82% 0%, 100% 100%, 0% 100%);
-    background: linear-gradient(180deg, rgba(6, 214, 160, 0.14) 0%, rgba(12, 65, 55, 0.03) 45%, transparent 100%);
+    background: linear-gradient(180deg, rgba(57, 255, 20, 0.18) 0%, rgba(11, 61, 46, 0.05) 50%, transparent 100%);
   }
   .dark .lighting-spotlight-cone {
     clip-path: polygon(18% 0%, 82% 0%, 100% 100%, 0% 100%);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.01) 85%, transparent 100%);
+    background: linear-gradient(180deg, rgba(57, 255, 20, 0.22) 0%, rgba(11, 61, 46, 0.12) 45%, rgba(4, 21, 15, 0.02) 85%, transparent 100%);
   }
 
   .lighting-horizon-slit {
-    box-shadow: 0 0 20px 2px rgba(6, 214, 160, 0.35), 0 0 6px 1px rgba(6, 214, 160, 0.6);
+    box-shadow: 0 0 25px 3px rgba(57, 255, 20, 0.45), 0 0 8px 1px rgba(57, 255, 20, 0.7);
   }
   .dark .lighting-horizon-slit {
-    box-shadow: 0 0 25px 3px rgba(255, 255, 255, 0.7), 0 0 8px 1px rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 30px 4px rgba(57, 255, 20, 0.65), 0 0 10px 2px rgba(57, 255, 20, 0.9);
   }
 
   .lighting-key-glow {
-    box-shadow: 0 0 25px 2px rgba(6, 214, 160, 0.5), 0 0 60px 8px rgba(6, 214, 160, 0.25);
+    box-shadow: 0 0 30px 3px rgba(57, 255, 20, 0.55), 0 0 70px 10px rgba(57, 255, 20, 0.25);
   }
 
   .lighting-badge-glow {
-    box-shadow: 0 0 20px 2px rgba(6, 214, 160, 0.35);
+    box-shadow: 0 0 20px 2px rgba(57, 255, 20, 0.4);
   }
 
   .lighting-earth-arc {
-    border-top: 2px solid rgba(6, 214, 160, 0.5);
-    box-shadow: 0 -15px 40px rgba(6, 214, 160, 0.15), 0 -4px 10px rgba(6, 214, 160, 0.3);
+    border-top: 2px solid rgba(57, 255, 20, 0.6);
+    box-shadow: 0 -15px 45px rgba(57, 255, 20, 0.25), 0 -4px 12px rgba(57, 255, 20, 0.4);
   }
   .dark .lighting-earth-arc {
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 -4px 16px rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(57, 255, 20, 0.4);
+    box-shadow: 0 -8px 24px rgba(57, 255, 20, 0.18);
   }
 
   /* ── Body Typography (Inter) ── */
@@ -304,18 +304,18 @@
 
   /* ── PayCrew Brand Gradients ── */
   .gradient-brand {
-    background: linear-gradient(135deg, var(--brand-brunswick) 0%, var(--brand-emerald) 100%);
+    background: linear-gradient(135deg, #0b3d2e 0%, #007a4d 50%, #39ff14 100%);
   }
   .gradient-brand-text {
-    background: linear-gradient(135deg, var(--brand-emerald) 0%, var(--brand-polar) 100%);
+    background: linear-gradient(135deg, #39ff14 0%, #16db2e 50%, #ffffff 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .gradient-brand-subtle {
-    background: linear-gradient(135deg, rgba(6, 214, 160, 0.04) 0%, rgba(12, 65, 55, 0.06) 50%, rgba(6, 15, 12, 0.02) 100%);
+    background: linear-gradient(135deg, rgba(11, 61, 46, 0.08) 0%, rgba(57, 255, 20, 0.05) 50%, rgba(6, 38, 28, 0.02) 100%);
   }
   .gradient-brand-radial {
-    background: radial-gradient(ellipse at 30% 20%, rgba(6, 214, 160, 0.08) 0%, rgba(12, 65, 55, 0.04) 50%, transparent 70%);
+    background: radial-gradient(ellipse at 30% 20%, rgba(57, 255, 20, 0.12) 0%, rgba(11, 61, 46, 0.06) 50%, transparent 75%);
   }
 }

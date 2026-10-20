@@ -3,12 +3,17 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import {
-  AppStrings,
+  BanknoteIcon,
+  FileCheckIcon,
+  HomeIcon,
   LogOutIcon,
-  XIcon,
+  ShieldCheckIcon,
   ShieldIcon,
+  SlidersIcon,
+  UsersIcon,
+  WalletIcon,
+  XIcon,
 } from '@/assets';
-import { DASHBOARD_NAV_ITEMS } from './sidebar.constants';
 
 interface DashboardMobileDrawerProps {
   isOpen: boolean;
@@ -17,6 +22,16 @@ interface DashboardMobileDrawerProps {
   onLogout: () => void;
   user?: any;
 }
+
+const mobileNavItems = [
+  { icon: HomeIcon, label: 'Overview', href: '/dashboard', exact: true },
+  { icon: UsersIcon, label: 'Contractors', href: '/dashboard/workers' },
+  { icon: BanknoteIcon, label: 'Payroll Runs', href: '/dashboard/payroll' },
+  { icon: WalletIcon, label: 'Treasury', href: '/dashboard/wallet' },
+  { icon: FileCheckIcon, label: 'Contracts & KYB', href: '/dashboard/settings' },
+  { icon: ShieldCheckIcon, label: 'Approvals', href: '/dashboard/payroll' },
+  { icon: SlidersIcon, label: 'Settings', href: '/dashboard/settings' },
+];
 
 export function DashboardMobileDrawer({
   isOpen,
@@ -27,50 +42,42 @@ export function DashboardMobileDrawer({
 }: DashboardMobileDrawerProps) {
   if (!isOpen) return null;
 
-  const adminName = user?.fullName || (user?.email ? user.email.split('@')[0] : 'Admin');
-  const avatarLetter = (user?.fullName
-    ? user.fullName
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .slice(0, 2)
-    : adminName.charAt(0)
-  ).toUpperCase();
-
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background/95 backdrop-blur-xl p-5 lg:hidden animate-in fade-in select-none">
       <div className="flex items-center justify-between pb-4 border-b border-border">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-emerald text-black font-black text-caption shadow-[0_0_12px_rgba(6,214,160,0.4)]">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black font-black text-[11px] shadow-sm">
             P
           </div>
-          <span className="text-display-sm font-bold text-foreground">{AppStrings.appName}</span>
+          <span className="text-label-sm font-bold text-[#0b3d2e] dark:text-white tracking-tight">
+            PayCrew
+          </span>
         </div>
         <button
           onClick={onClose}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground hover:bg-secondary cursor-pointer"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-foreground hover:bg-secondary cursor-pointer"
         >
           <XIcon className="h-5 w-5" />
         </button>
       </div>
 
-      <nav className="mt-6 flex flex-col gap-2 overflow-y-auto flex-1">
-        {DASHBOARD_NAV_ITEMS.map((item) => {
+      <nav className="mt-5 flex flex-col gap-1.5 overflow-y-auto flex-1">
+        {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               onClick={onClose}
               className={clsx(
-                'flex items-center gap-3 rounded-xl px-4 py-3 text-label-md transition-colors min-h-[44px]',
+                'flex items-center gap-3 rounded-xl px-3.5 py-3 text-body-sm transition-all',
                 isActive
-                  ? 'bg-primary/10 text-primary font-semibold shadow-xs'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                  ? 'bg-black/[0.06] dark:bg-white/[0.08] font-bold text-foreground shadow-xs'
+                  : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               )}
             >
-              <Icon className={clsx('h-5 w-5', isActive ? 'text-primary' : 'text-muted-foreground')} />
+              <Icon className={clsx('h-4 w-4', isActive ? 'text-primary' : 'text-muted-foreground')} />
               <span>{item.label}</span>
             </Link>
           );
@@ -80,35 +87,25 @@ export function DashboardMobileDrawer({
           <Link
             href="/admin"
             onClick={onClose}
-            className={clsx(
-              'flex items-center gap-3 rounded-xl px-4 py-3 text-label-md transition-colors min-h-[44px] border border-brand-emerald/30',
-              pathname.startsWith('/admin')
-                ? 'bg-brand-emerald/15 text-brand-emerald font-semibold shadow-xs'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-            )}
+            className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-body-sm text-brand-emerald border border-brand-emerald/30 mt-2"
           >
-            <ShieldIcon className="h-5 w-5 text-brand-emerald" />
-            <span>Platform Admin</span>
+            <ShieldIcon className="h-4 w-4" />
+            <span>Admin Console</span>
           </Link>
         )}
       </nav>
 
-      <div className="mt-auto pt-4 border-t border-border flex flex-col gap-3">
-        <div className="flex items-center gap-3 px-1">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary border border-border text-foreground font-bold text-caption">
-            {avatarLetter}
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-label-sm font-semibold text-foreground truncate">{adminName}</p>
-            <p className="text-caption text-muted-foreground truncate">{user?.email}</p>
-          </div>
-        </div>
+      {/* Logout */}
+      <div className="pt-4 border-t border-border mt-auto">
         <button
-          onClick={onLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-label-md text-destructive hover:bg-destructive/10 min-h-[44px] cursor-pointer"
+          onClick={() => {
+            onClose();
+            onLogout();
+          }}
+          className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-body-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOutIcon className="h-4 w-4" />
-          <span>{AppStrings.navigation.logout}</span>
+          <span>Sign out</span>
         </button>
       </div>
     </div>

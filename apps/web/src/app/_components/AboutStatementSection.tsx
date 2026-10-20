@@ -18,7 +18,7 @@ export function AboutStatementSection() {
         {/* Big Statement with inline icon chips */}
         <h2 className="text-display-sm sm:text-display-md lg:text-display-lg font-heading font-semibold text-gray-900 dark:text-white leading-snug tracking-tight">
           PayCrew breaks cross-border barriers, empowering companies to fund with Naira{' '}
-          <span className="inline-flex items-center justify-center align-middle mx-1 h-8 w-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-brand-emerald shadow-[0_0_15px_rgba(6,214,160,0.3)]">
+          <span className="inline-flex items-center justify-center align-middle mx-1 h-8 w-8 rounded-lg bg-[#0b3d2e]/10 border border-[#0b3d2e]/20 text-[#0b3d2e] dark:bg-brand-emerald/15 dark:border-brand-emerald/30 dark:text-brand-emerald shadow-xs dark:shadow-[0_0_15px_rgba(57,255,20,0.3)]">
             <BuildingIcon className="h-4 w-4" />
           </span>
           {', '}disburse payroll in stablecoins{' '}

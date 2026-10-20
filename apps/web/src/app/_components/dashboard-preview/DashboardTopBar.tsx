@@ -14,10 +14,10 @@ export function DashboardTopBar() {
       <div className="flex items-center gap-4">
         {/* PayCrew Brand */}
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-brand-emerald text-black font-black text-[11px] shadow-[0_0_8px_rgba(6,214,160,0.4)]">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black font-black text-[11px] shadow-sm dark:shadow-[0_0_8px_rgba(57,255,20,0.4)]">
             P
           </div>
-          <span className="text-label-sm font-semibold text-gray-900 dark:text-white tracking-tight">
+          <span className="text-label-sm font-bold text-[#0b3d2e] dark:text-white tracking-tight">
             PayCrew
           </span>
           <button
@@ -58,7 +58,7 @@ export function DashboardTopBar() {
         {/* Bell with approval count badge */}
         <div className="relative flex h-7 w-7 items-center justify-center rounded-lg border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] text-gray-600 dark:text-[#9ca3af] hover:text-black dark:hover:text-white shadow-xs transition-colors cursor-pointer">
           <BellIcon className="h-3.5 w-3.5" />
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-emerald text-[9px] font-bold text-black shadow-sm">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#0b3d2e] text-[9px] font-bold text-white dark:bg-brand-emerald dark:text-black shadow-sm">
             3
           </span>
         </div>

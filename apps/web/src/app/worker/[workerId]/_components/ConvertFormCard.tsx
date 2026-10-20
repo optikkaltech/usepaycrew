@@ -16,7 +16,7 @@ export function ConvertFormCard({
   availableUsd,
   liveRate,
   payoutMethods = [],
-  workerName = 'Adaeze Okonkwo',
+  workerName = '',
   onReviewConversion,
 }: ConvertFormCardProps) {
   const [amountStr, setAmountStr] = useState('');
@@ -41,7 +41,7 @@ export function ConvertFormCard({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-body-lg sm:text-display-xs font-bold text-foreground">
-          Convert QDASH to Naira
+          Convert USDT to Naira
         </h2>
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -53,12 +53,12 @@ export function ConvertFormCard({
       <div className="rounded-2xl border border-border/80 p-4 bg-background/50 flex flex-col gap-3">
         <div className="flex items-center justify-between text-body-xs font-medium text-muted-foreground">
           <span>From</span>
-          <span>Balance: {availableUsd.toFixed(2)} QD</span>
+          <span>Balance: {availableUsd.toFixed(2)} USDT</span>
         </div>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 flex-1">
-            <span className="px-2 py-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-body-xs">
-              QD
+            <span className="px-2 py-1 rounded-md bg-[#0b3d2e]/10 text-[#0b3d2e] dark:bg-brand-emerald/15 dark:text-brand-emerald font-bold text-body-xs">
+              USDT
             </span>
             <input
               type="number"
@@ -70,7 +70,7 @@ export function ConvertFormCard({
               className="w-full text-2xl sm:text-3xl font-extrabold text-foreground bg-transparent focus:outline-none placeholder:text-muted-foreground/40"
             />
           </div>
-          <span className="text-body-sm font-bold text-muted-foreground">QDASH</span>
+          <span className="text-body-sm font-bold text-muted-foreground">USDT</span>
         </div>
         <div className="flex items-center gap-2 pt-1">
           {[0.25, 0.5, 1].map((pct) => (
@@ -100,7 +100,7 @@ export function ConvertFormCard({
           {formatCurrency(grossNgn, 'NGN')}
         </div>
         <div className="mt-2 rounded-xl bg-secondary/50 p-2.5 text-[11px] text-muted-foreground">
-          1 QDASH = {formatCurrency(liveRate, 'NGN')} · Updates every 60s
+          1 USDT = {formatCurrency(liveRate, 'NGN')} · Updates every 60s
         </div>
       </div>
 
@@ -113,17 +113,17 @@ export function ConvertFormCard({
           <select
             value={selectedMethodId}
             onChange={(e) => setSelectedMethodId(e.target.value)}
-            className="w-full h-12 appearance-none rounded-xl border border-input bg-background px-3.5 pr-10 text-body-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-[#008774]"
+            className="w-full h-12 appearance-none rounded-xl border border-input bg-background px-3.5 pr-10 text-body-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {payoutMethods.length > 0 ? (
               payoutMethods.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.bankName || 'Bank'} — {m.accountReference} ({workerName})
+                  {m.bankName || 'Bank'} — {m.accountReference}{workerName ? ` (${workerName})` : ''}
                 </option>
               ))
             ) : (
-              <option value="">
-                GTBank — 0123456789 ({workerName})
+              <option value="" disabled>
+                No linked bank account — please add a bank first
               </option>
             )}
           </select>
@@ -152,7 +152,7 @@ export function ConvertFormCard({
         type="button"
         disabled={!isValid}
         onClick={() => onReviewConversion(parsedAmount, selectedMethodId)}
-        className="w-full min-h-[48px] rounded-xl bg-[#008774] hover:bg-[#007060] disabled:opacity-50 disabled:pointer-events-none text-white font-bold text-body-sm shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+        className="w-full min-h-[48px] rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none text-primary-foreground font-bold text-body-sm shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
       >
         <TrendingUpIcon className="h-4 w-4" />
         Review conversion

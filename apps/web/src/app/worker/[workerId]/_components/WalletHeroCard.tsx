@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import { formatCurrency } from '@/utils';
+import { usePrivacyStore } from '@/store';
 
 interface WalletHeroCardProps {
   availableUsd: number;
@@ -16,10 +17,12 @@ export function WalletHeroCard({
   availableUsd,
   availableNgn,
   autoCashout,
-  defaultBankName = 'GTBank',
+  defaultBankName = 'your linked bank',
   isTogglingPreference,
   onToggleAutoCashout,
 }: WalletHeroCardProps) {
+  const { isPrivacyMode } = usePrivacyStore();
+
   // Format approximate naira into short form e.g. ₦853.4K or full currency
   const formatCompactNgn = (val: number) => {
     if (val >= 1_000_000) {
@@ -36,20 +39,20 @@ export function WalletHeroCard({
       {/* Left side: Balance display */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-bold text-body-xs">
-            QD
+          <span className="px-2 py-0.5 rounded-md bg-[#0b3d2e]/10 text-[#0b3d2e] dark:bg-brand-emerald/15 dark:text-brand-emerald font-bold text-body-xs">
+            USDT
           </span>
           <span className="text-body-xs sm:text-body-sm font-semibold text-muted-foreground">
-            QDASH balance
+            USDT balance
           </span>
         </div>
 
         <div className="text-4xl sm:text-5xl font-black text-foreground tracking-tight mt-1">
-          {availableUsd.toFixed(2)} QD
+          {isPrivacyMode ? '••••••' : `${availableUsd.toFixed(2)} USDT`}
         </div>
 
         <div className="text-body-sm sm:text-body-md font-semibold text-muted-foreground">
-          {formatCompactNgn(availableNgn)}
+          {isPrivacyMode ? '••••••' : formatCompactNgn(availableNgn)}
         </div>
       </div>
 
@@ -80,14 +83,14 @@ export function WalletHeroCard({
           </div>
 
           <p className="text-caption text-muted-foreground leading-relaxed">
-            Incoming QDASH is auto-converted to NGN and sent to {defaultBankName}.
+            Incoming USDT is auto-converted to NGN and sent to {defaultBankName}.
           </p>
 
           <button
             type="button"
             disabled={isTogglingPreference}
             onClick={onToggleAutoCashout}
-            className="text-left text-body-xs font-bold text-[#008774] dark:text-emerald-400 hover:underline cursor-pointer pt-1"
+            className="text-left text-body-xs font-bold text-primary hover:underline cursor-pointer pt-1"
           >
             {isTogglingPreference ? 'Updating...' : 'Change preference'}
           </button>

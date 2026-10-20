@@ -4,17 +4,26 @@ import { useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
+// Global listeners for instant cross-component synchronization
+const listeners = new Set<(t: Theme) => void>();
+
 export function useTheme() {
   const [theme, setThemeState] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Read persisted theme or default to 'light'
+    const isDocDark = document.documentElement.classList.contains('dark');
     const stored = localStorage.getItem('paycrew_theme_mode') as Theme | null;
-    const initialTheme: Theme = stored === 'dark' ? 'dark' : 'light';
+    const initialTheme: Theme = stored === 'dark' || isDocDark ? 'dark' : 'light';
     setThemeState(initialTheme);
     applyTheme(initialTheme);
     setMounted(true);
+
+    const handler = (t: Theme) => setThemeState(t);
+    listeners.add(handler);
+    return () => {
+      listeners.delete(handler);
+    };
   }, []);
 
   const applyTheme = (t: Theme) => {
@@ -35,10 +44,12 @@ export function useTheme() {
       localStorage.setItem('paycrew_theme_mode', t);
       localStorage.setItem('paycrew_theme', t);
     } catch (_) {}
+    listeners.forEach((listener) => listener(t));
   };
 
   const toggleTheme = () => {
-    const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+    const currentIsDark = document.documentElement.classList.contains('dark');
+    const nextTheme: Theme = currentIsDark ? 'light' : 'dark';
     setTheme(nextTheme);
   };
 

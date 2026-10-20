@@ -63,8 +63,8 @@ export function PowerfulToolsSection() {
               </div>
               <div className="relative mt-4 h-24 w-full">
                 <svg className="w-full h-full overflow-visible" viewBox="0 0 300 80">
-                  <path d="M0,60 Q50,65 100,50 T200,30 T300,20" fill="none" stroke="#06D6A0" strokeWidth="2" />
-                  <circle cx="200" cy="30" r="4" fill="#06D6A0" className="animate-pulse" />
+                  <path d="M0,60 Q50,65 100,50 T200,30 T300,20" fill="none" stroke="#39FF14" strokeWidth="2" />
+                  <circle cx="200" cy="30" r="4" fill="#39FF14" className="animate-pulse" />
                 </svg>
                 <div className="absolute left-[62%] top-3 -translate-x-1/2 rounded bg-gray-900 text-white dark:bg-[#1e2029] border border-black/10 dark:border-white/10 px-2 py-0.5 text-[10px] shadow-lg">
                   Instant Dispatch

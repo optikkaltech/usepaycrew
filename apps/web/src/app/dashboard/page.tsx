@@ -4,23 +4,20 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { http } from '@/services';
 import { FundingModal } from './_components/FundingModal';
-import { DashboardOverviewHeader } from './_components/DashboardOverviewHeader';
-import { ExecutiveTreasuryCard } from './_components/ExecutiveTreasuryCard';
-import { DashboardMetricsGrid } from './_components/DashboardMetricsGrid';
+import { ActivePayrollDisbursement } from './_components/ActivePayrollDisbursement';
+import { TreasuryFlowChart } from './_components/TreasuryFlowChart';
 import { RecentDisbursementsCard } from './_components/RecentDisbursementsCard';
-import { CorridorsRatesWidget } from './_components/CorridorsRatesWidget';
-import { ContractorSnapshotWidget } from './_components/ContractorSnapshotWidget';
 import { DashboardPaymentItem, DashboardWorkerItem } from './_components/dashboard.types';
 
 export default function DashboardPage() {
   const [fundingOpen, setFundingOpen] = useState(false);
 
-  const { data: balanceData } = useQuery({
+  const { data: balanceData, refetch: refetchBalance } = useQuery({
     queryKey: ['companyBalance'],
     queryFn: () => http.get<{ availableBalance?: string }>('/ledger/company-balance?currency=USD'),
   });
 
-  const { data: rateData } = useQuery({
+  const { data: rateData, refetch: refetchRate } = useQuery({
     queryKey: ['marketRate'],
     queryFn: () => http.get<{ data?: { rate?: number }; rate?: number }>('/payments/rate?pair=USDT_NGN'),
   });
@@ -30,7 +27,7 @@ export default function DashboardPage() {
     queryFn: () => http.get('/workers'),
   });
 
-  const { data: payments = [] } = useQuery<DashboardPaymentItem[]>({
+  const { data: payments = [], refetch: refetchPayments } = useQuery<DashboardPaymentItem[]>({
     queryKey: ['payments'],
     queryFn: () => http.get('/payments'),
   });
@@ -39,48 +36,38 @@ export default function DashboardPage() {
   const rateNumber = rateData?.data?.rate || rateData?.rate || 1585;
   const availableNgn = availableUsd * rateNumber;
 
-  const pendingPayoutsCount = payments.filter((p) => p.status === 'PENDING').length;
   const totalDisbursedUsd = payments
     .filter((p) => p.status === 'COMPLETED' || p.status === 'PAID')
     .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
 
-  return (
-    <div className="flex flex-col gap-5 sm:gap-6 w-full">
-      {/* Top Header with Actions */}
-      <DashboardOverviewHeader onOpenFunding={() => setFundingOpen(true)} />
+  const handleRefresh = () => {
+    refetchBalance();
+    refetchRate();
+    refetchPayments();
+  };
 
-      {/* Scaled & Refined Treasury Balance Card */}
-      <ExecutiveTreasuryCard
+  return (
+    <div className="flex flex-col gap-4 sm:gap-5 w-full max-w-7xl mx-auto">
+      {/* 1. Active Payroll Disbursement (4 Department Cards) */}
+      <ActivePayrollDisbursement totalDisbursedUsd={totalDisbursedUsd} />
+
+      {/* 2. Treasury & Payroll Flow (Dual Wave Flow Chart) */}
+      <TreasuryFlowChart
         availableUsd={availableUsd}
         availableNgn={availableNgn}
-        marketRate={rateNumber}
+        onRefresh={handleRefresh}
         onOpenFunding={() => setFundingOpen(true)}
       />
 
-      {/* 4 Focused Proportional Metrics */}
-      <DashboardMetricsGrid
-        workersCount={workers.length}
-        pendingPayoutsCount={pendingPayoutsCount}
-        totalDisbursedUsd={totalDisbursedUsd}
-      />
-
-      {/* Core Operational Details & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-        {/* Left Column: Recent Settlements / Payroll Pipeline */}
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-5">
-          <RecentDisbursementsCard
-            payments={payments}
-            onOpenFunding={() => setFundingOpen(true)}
-          />
-        </div>
-
-        {/* Right Column: Corridors & Contractor Snapshot */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-5">
-          <CorridorsRatesWidget marketRate={rateNumber} />
-          <ContractorSnapshotWidget workers={workers} />
-        </div>
+      {/* 3. Recent Disbursements Feed */}
+      <div className="mt-2">
+        <RecentDisbursementsCard
+          payments={payments}
+          onOpenFunding={() => setFundingOpen(true)}
+        />
       </div>
 
+      {/* Funding Modal */}
       <FundingModal
         isOpen={fundingOpen}
         onClose={() => setFundingOpen(false)}

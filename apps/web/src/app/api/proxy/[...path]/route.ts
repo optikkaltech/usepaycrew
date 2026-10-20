@@ -11,6 +11,14 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
   const search = req.nextUrl.search;
   const targetUrl = `${BACKEND_URL}/${endpoint}${search}`;
 
+  // Handle Logout immediately and clear httpOnly session cookies
+  if (endpoint.includes('auth/logout')) {
+    const logoutRes = NextResponse.json({ success: true, message: 'Logged out successfully' });
+    logoutRes.cookies.delete('pc_at');
+    logoutRes.cookies.delete('pc_rt');
+    return logoutRes;
+  }
+
   const forwardHeaders = new Headers();
   forwardHeaders.set('Content-Type', req.headers.get('content-type') || 'application/json');
 

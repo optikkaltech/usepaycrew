@@ -5,7 +5,7 @@ export function IntegrationsSection() {
   const apps = [
     { name: 'Direct Settlement', bg: 'bg-[#002244]', text: 'DS', textColor: 'text-white' },
     { name: 'Quidax', bg: 'bg-[#0052FF]', text: 'Q', textColor: 'text-white' },
-    { name: 'PayCrew', bg: 'bg-brand-emerald', text: 'P', textColor: 'text-black', featured: true },
+    { name: 'PayCrew', bg: 'bg-[#0b3d2e] dark:bg-brand-emerald', text: 'P', textColor: 'text-white dark:text-black', featured: true },
     { name: 'Base', bg: 'bg-[#0052FF]', text: 'Base', textColor: 'text-white' },
     { name: 'TRON', bg: 'bg-[#FF0018]', text: 'TRON', textColor: 'text-white' },
   ];
@@ -46,7 +46,7 @@ export function IntegrationsSection() {
                 key={app.name}
                 className={`relative flex items-center justify-center rounded-2xl transition-all duration-300 hover:scale-110 cursor-pointer ${
                   app.featured
-                    ? `h-16 w-16 sm:h-20 sm:w-20 ${app.bg} shadow-[0_0_45px_rgba(6,214,160,0.5)] ring-2 ring-brand-emerald/50`
+                    ? `h-16 w-16 sm:h-20 sm:w-20 ${app.bg} shadow-md dark:shadow-[0_0_45px_rgba(57,255,20,0.5)] ring-2 ring-[#0b3d2e]/30 dark:ring-brand-emerald/50`
                     : `h-12 w-12 sm:h-16 sm:w-16 ${app.bg} opacity-90 hover:opacity-100 shadow-md dark:shadow-[0_0_20px_rgba(0,0,0,0.8)] border border-black/10 dark:border-white/10`
                 }`}
               >

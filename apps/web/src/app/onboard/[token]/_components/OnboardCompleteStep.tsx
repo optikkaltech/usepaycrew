@@ -20,7 +20,7 @@ export function OnboardCompleteStep({
   return (
     <Card variant="elevated" className="flex flex-col items-center text-center p-8 border-border">
       <div className="relative mb-5">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-emerald text-black shadow-[0_0_24px_rgba(6,214,160,0.4)] animate-in zoom-in-75">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black shadow-sm dark:shadow-[0_0_24px_rgba(57,255,20,0.4)] animate-in zoom-in-75">
           <CheckCircleIcon className="h-8 w-8" />
         </div>
       </div>

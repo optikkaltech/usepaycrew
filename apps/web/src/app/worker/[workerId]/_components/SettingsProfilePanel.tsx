@@ -54,13 +54,13 @@ export function SettingsProfilePanel({ workerId, worker, onSuccess }: SettingsPr
 
       {/* Avatar Row */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="h-14 w-14 rounded-full bg-[#008774] text-white flex items-center justify-center font-bold text-body-lg shadow-xs shrink-0">
+        <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-body-lg shadow-xs shrink-0">
           {getInitials(name || worker?.name)}
         </div>
         <button
           type="button"
           onClick={() => toast.info('Photo upload available soon')}
-          className="border border-[#008774] text-[#008774] hover:bg-[#008774]/5 px-4 py-2 rounded-xl text-body-xs font-semibold transition-colors cursor-pointer"
+          className="border border-primary/30 text-primary hover:bg-primary/5 px-4 py-2 rounded-xl text-body-xs font-semibold transition-colors cursor-pointer"
         >
           Change photo
         </button>
@@ -78,7 +78,7 @@ export function SettingsProfilePanel({ workerId, worker, onSuccess }: SettingsPr
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Adaeze Okonkwo"
-              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#008774]"
+              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -91,7 +91,7 @@ export function SettingsProfilePanel({ workerId, worker, onSuccess }: SettingsPr
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. adaeze@team.io"
-              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#008774]"
+              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -104,7 +104,7 @@ export function SettingsProfilePanel({ workerId, worker, onSuccess }: SettingsPr
               value={role}
               onChange={(e) => setRole(e.target.value)}
               placeholder="e.g. Senior Frontend Engineer"
-              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#008774]"
+              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -117,7 +117,7 @@ export function SettingsProfilePanel({ workerId, worker, onSuccess }: SettingsPr
               value={country}
               onChange={(e) => setCountry(e.target.value)}
               placeholder="e.g. Nigeria"
-              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#008774]"
+              className="h-11 rounded-xl border border-input bg-background px-3.5 text-body-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         </div>
@@ -127,7 +127,7 @@ export function SettingsProfilePanel({ workerId, worker, onSuccess }: SettingsPr
           <Button
             type="submit"
             disabled={isSaving}
-            className="min-h-[44px] bg-[#008774] hover:bg-[#007060] text-white font-semibold px-6 py-2.5 rounded-xl shadow-xs transition-colors"
+            className="min-h-[44px] bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 rounded-xl shadow-xs transition-colors"
           >
             {isSaving ? 'Saving...' : 'Save changes'}
           </Button>

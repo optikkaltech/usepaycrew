@@ -103,7 +103,7 @@ export function QuickConvertCard({
       <Button
         onClick={() => onInitiateConvert(parsedAmount)}
         disabled={!isValid || !defaultBankName}
-        className="mt-5 w-full min-h-[44px] bg-brand-emerald text-black hover:bg-brand-emerald/90 font-bold"
+        className="mt-5 w-full min-h-[44px] bg-[#0b3d2e] hover:bg-[#0b3d2e]/90 text-white dark:bg-brand-emerald dark:hover:bg-brand-emerald/90 dark:text-black font-bold"
       >
         <TrendingUpIcon className="mr-2 h-4 w-4" />
         Convert to Naira Now

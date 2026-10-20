@@ -84,7 +84,7 @@ export function PricingCards({ annual }: PricingCardsProps) {
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-brand-emerald px-3.5 py-0.5 text-caption font-bold text-black uppercase tracking-wider shadow-sm">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#0b3d2e] text-white dark:bg-brand-emerald dark:text-black px-3.5 py-0.5 text-caption font-bold uppercase tracking-wider shadow-sm">
                   Recommended
                 </div>
               )}
@@ -136,7 +136,7 @@ export function PricingCards({ annual }: PricingCardsProps) {
                   prefetch={true}
                   className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-3 text-label-sm font-semibold transition-all ${
                     plan.popular
-                      ? 'bg-brand-emerald hover:bg-brand-emerald/90 text-black shadow-md shadow-brand-emerald/20 font-bold'
+                      ? 'bg-[#0b3d2e] hover:bg-[#0b3d2e]/90 text-white dark:bg-brand-emerald dark:hover:bg-brand-emerald/90 dark:text-black shadow-md shadow-brand-emerald/20 font-bold'
                       : 'bg-[#0f1115] hover:bg-[#1e2025] text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black shadow-sm'
                   }`}
                 >

@@ -25,7 +25,7 @@ const expenseItems: ExpenseItem[] = [
     change: '+12.4%',
     isPositive: true,
     icon: UsersIcon,
-    dotColor: 'bg-brand-emerald',
+    dotColor: 'bg-[#0b3d2e] dark:bg-brand-emerald',
   },
   {
     name: 'Design & UX',
@@ -90,7 +90,7 @@ export function DashboardExpenses() {
                 </div>
                 <span
                   className={`text-[10px] font-semibold ${
-                    item.isPositive ? 'text-emerald-700 dark:text-brand-emerald' : 'text-red-500 dark:text-red-400'
+                    item.isPositive ? 'text-[#0b3d2e] dark:text-brand-emerald' : 'text-red-500 dark:text-red-400'
                   }`}
                 >
                   {item.isPositive ? '↑' : '↓'} {item.change}

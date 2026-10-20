@@ -132,8 +132,8 @@ export function AddBankModal({
           </div>
 
           {resolvedName && (
-            <div className="rounded-xl bg-[#008774]/10 border border-[#008774]/20 p-3">
-              <p className="text-caption font-semibold text-[#008774]">Verified Account Name</p>
+            <div className="rounded-xl bg-primary/10 border border-primary/20 p-3">
+              <p className="text-caption font-semibold text-primary">Verified Account Name</p>
               <p className="text-body-sm font-bold text-foreground">{resolvedName}</p>
             </div>
           )}
@@ -160,7 +160,7 @@ export function AddBankModal({
           <Button
             onClick={() => saveBankMutation.mutate()}
             disabled={!resolvedName || saveBankMutation.isPending}
-            className="bg-[#008774] hover:bg-[#007060] text-white font-bold"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
           >
             {saveBankMutation.isPending ? 'Linking...' : 'Add Account'}
           </Button>
